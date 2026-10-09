@@ -89,6 +89,7 @@ function TenantsList() {
       aria-labelledby="tenants-heading"
     >
       <div className="tenants-inner">
+        <p className="section-eyebrow">Directory</p>
         <h2 id="tenants-heading">Care providers on O-HM</h2>
         <p className="tenants-lead">
           Each tenant can operate multiple branches. Browse sample networks and their

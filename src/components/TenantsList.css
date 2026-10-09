@@ -9,27 +9,21 @@
   margin: 0 auto;
 }
 
-.tenants h2 {
+.tenants .section-eyebrow {
   margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.tenants h2 {
+  margin: 0 0 0.45rem;
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-size: clamp(1.55rem, 2.8vw, 2rem);
   font-weight: 700;
   color: var(--color-primary);
-}
-
-.tenants h2::after {
-  content: '';
-  display: block;
-  width: 3.5rem;
-  height: 3px;
-  margin-top: 0.75rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-primary-light));
-  transform-origin: left;
-}
-
-.tenants.is-revealed h2::after {
-  animation: shimmer-line 0.7s var(--ease-out) 0.15s both;
 }
 
 .tenants-lead {

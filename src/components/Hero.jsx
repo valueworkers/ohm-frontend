@@ -5,6 +5,7 @@ function Hero() {
   return (
     <section id="home" className="hero" aria-labelledby="hero-brand">
       <div className="hero-content">
+        <p className="hero-eyebrow">Senior care aggregator</p>
         <p id="hero-brand" className="hero-brand">
           O-HM
         </p>

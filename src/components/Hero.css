@@ -56,11 +56,22 @@
   transform: scale(1.03);
 }
 
+.hero-eyebrow,
 .hero-brand,
 .hero-title,
 .hero-lead,
 .hero-actions {
   animation: rise-in 0.8s var(--ease-out) both;
+}
+
+.hero-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  animation-delay: 0.02s;
 }
 
 .hero-brand {

@@ -1,8 +1,7 @@
 .about {
   padding: var(--space-section) 1.25rem;
   background:
-    radial-gradient(ellipse at top right, rgba(126, 181, 177, 0.28), transparent 52%),
-    radial-gradient(ellipse at bottom left, rgba(212, 87, 42, 0.08), transparent 45%),
+    radial-gradient(ellipse at top right, rgba(126, 181, 177, 0.22), transparent 52%),
     var(--color-surface);
 }
 
@@ -11,32 +10,26 @@
   margin: 0 auto;
 }
 
-.about h2 {
+.section-eyebrow {
   margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.about h2 {
+  margin: 0 0 0.55rem;
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-size: clamp(1.55rem, 2.8vw, 2rem);
   font-weight: 700;
   color: var(--color-primary);
 }
 
-.about h2::after {
-  content: '';
-  display: block;
-  width: 3.5rem;
-  height: 3px;
-  margin-top: 0.75rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-primary-light));
-  transform-origin: left;
-}
-
-.about.is-revealed h2::after {
-  animation: shimmer-line 0.7s var(--ease-out) 0.15s both;
-}
-
 .about-lead {
-  margin: 0.65rem 0 1.15rem;
-  max-width: 60ch;
+  margin: 0 0 1.25rem;
+  max-width: 58ch;
   font-size: 1.1rem;
   color: var(--color-ink-muted);
 }
@@ -50,13 +43,14 @@
 }
 
 .about-point {
-  max-width: 55ch;
-  padding: 0.85rem 0.9rem 0.85rem 0.85rem;
-  border-left: 3px solid var(--color-primary-light);
-  border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--color-ink);
-  box-shadow: 0 8px 24px rgba(17, 77, 74, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1rem 1.05rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(17, 77, 74, 0.04);
   transition:
     transform 0.35s var(--ease-out),
     box-shadow 0.35s ease,
@@ -69,37 +63,44 @@
 }
 
 .about.is-revealed .about-point.reveal-delay-1 {
-  animation-delay: 0.12s;
+  animation-delay: 0.1s;
 }
 
 .about.is-revealed .about-point.reveal-delay-2 {
-  animation-delay: 0.22s;
+  animation-delay: 0.18s;
 }
 
 .about.is-revealed .about-point.reveal-delay-3 {
-  animation-delay: 0.32s;
+  animation-delay: 0.26s;
 }
 
 .about-point:hover {
-  transform: translateY(-4px);
-  border-left-color: var(--color-accent);
+  transform: translateY(-3px);
+  border-color: var(--color-primary-light);
   box-shadow: var(--shadow-soft);
 }
 
+.about-point-num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+}
+
 .about-point strong {
-  display: block;
-  margin-bottom: 0.35rem;
   color: var(--color-primary);
-  font-size: 1.125rem;
+  font-size: 1.1rem;
+}
+
+.about-point p {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 1rem;
 }
 
 @media (min-width: 768px) {
   .about-points {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.75rem;
-  }
-
-  .about-point {
-    max-width: none;
+    gap: 1rem;
   }
 }
