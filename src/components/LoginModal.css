@@ -1,0 +1,198 @@
+.login-modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: fade-in 0.25s ease;
+}
+
+.login-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(30, 38, 28, 0.5);
+  cursor: pointer;
+}
+
+.login-modal {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 26rem);
+  padding: 1.5rem;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lift);
+  animation: login-modal-in 0.35s var(--ease-out);
+}
+
+.login-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.login-modal-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--color-primary);
+}
+
+.login-modal-close {
+  min-height: 44px;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--color-ink);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.login-modal-close:hover {
+  background: var(--color-surface-soft);
+}
+
+.login-method-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.login-method-tabs button {
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.2s ease;
+}
+
+.login-method-tabs button:hover {
+  transform: translateY(-1px);
+}
+
+.login-method-tabs button.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: rise-in 0.35s var(--ease-out);
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.login-field label {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--color-ink);
+}
+
+.login-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--color-ink);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.login-field input:focus {
+  border-color: var(--color-primary-mid);
+  box-shadow: 0 0 0 3px rgba(126, 181, 177, 0.4);
+  outline: none;
+}
+
+.login-help {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 1.05rem;
+}
+
+.login-submit {
+  min-height: 48px;
+  margin-top: 0.25rem;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: var(--radius-control);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    transform 0.25s var(--ease-out),
+    box-shadow 0.25s ease;
+}
+
+.login-submit:hover {
+  background: var(--color-primary-mid);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(17, 77, 74, 0.28);
+}
+
+.login-link-btn {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0.25rem 0;
+  border: none;
+  background: transparent;
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.login-status {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-soft);
+  color: var(--color-primary);
+  font-size: 1rem;
+  animation: rise-in 0.35s var(--ease-out);
+}
+
+@keyframes login-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.85rem) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

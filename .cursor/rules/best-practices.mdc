@@ -1,0 +1,51 @@
+---
+description: React and Vite coding standards for this project
+alwaysApply: true
+---
+
+# Best practices
+
+React 19 + Vite, JavaScript (JSX), plain CSS. Follow the existing file layout under `src/`.
+
+## Components
+
+- Functional components only. One component per file when it has its own markup or state.
+- Keep `App.jsx` thin. Put feature UI in `src/components/` and shared logic in `src/hooks/`.
+- Name components in PascalCase, files to match (`SearchForm.jsx`). Hooks start with `use`.
+- Derive values during render. Use state only for values that change over time.
+- Colocate CSS with the component (`SearchForm.jsx` + `SearchForm.css`) instead of growing `App.css`.
+
+```jsx
+// Prefer
+function MemberCard({ name, city }) {
+  return (
+    <article className="member-card">
+      <h2>{name}</h2>
+      <p>{city}</p>
+    </article>
+  )
+}
+
+// Avoid inline objects and anonymous handlers in lists
+members.map((member) => (
+  <MemberCard key={member.id} member={member} onSelect={handleSelect} />
+))
+```
+
+## Data and effects
+
+- Fetch in `useEffect` only when there is no event handler to put it in. Cancel or ignore stale responses.
+- Handle loading, empty, and error states in the UI. Do not swallow errors.
+- Do not add libraries (routers, state, UI kits) unless the task needs them. This app starts with React only.
+
+## JavaScript
+
+- ES modules. No unused variables (ESLint: `no-unused-vars`, ignore `^[A-Z_]`).
+- Prefer `const`. Name booleans as questions (`isLoading`, `hasResults`).
+- Guard early. Return null or a small empty state instead of deep nested JSX.
+
+## CSS
+
+- Class names in kebab-case, scoped to the component (`.member-card`, `.member-card-title`).
+- Put shared tokens (`--color-primary`, spacing, radius) on `:root` in `index.css`. Reuse them.
+- Mobile first. Add `@media (min-width: …)` for larger screens. Current content max width is `1200px`.
