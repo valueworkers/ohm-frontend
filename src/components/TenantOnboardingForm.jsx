@@ -120,38 +120,20 @@ function TenantOnboardingForm() {
           </div>
         ) : (
           <form className="onboarding-form" onSubmit={handleSubmit} noValidate={false}>
-            <div className="form-field">
-              <label htmlFor="tenantName">Tenant name</label>
-              <input
-                id="tenantName"
-                name="tenantName"
-                type="text"
-                required
-                autoComplete="organization"
-                value={form.tenantName}
-                onChange={(event) => updateField('tenantName', event.target.value)}
-              />
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="tenantLogo">Tenant logo</label>
-              <input
-                id="tenantLogo"
-                name="tenantLogo"
-                type="file"
-                accept="image/*"
-                onChange={handleLogoChange}
-              />
-              {logoPreview ? (
-                <img
-                  src={logoPreview}
-                  alt={`Preview of ${form.tenantName || 'tenant'} logo`}
-                  className="logo-preview"
+            <div className="form-row form-row-3">
+              <div className="form-field">
+                <label htmlFor="tenantName">Tenant name</label>
+                <input
+                  id="tenantName"
+                  name="tenantName"
+                  type="text"
+                  required
+                  autoComplete="organization"
+                  value={form.tenantName}
+                  onChange={(event) => updateField('tenantName', event.target.value)}
                 />
-              ) : null}
-            </div>
+              </div>
 
-            <div className="form-row">
               <div className="form-field">
                 <label htmlFor="email">Email</label>
                 <input
@@ -179,69 +161,147 @@ function TenantOnboardingForm() {
               </div>
             </div>
 
-            <div className="form-field">
-              <label htmlFor="address">Address</label>
-              <textarea
-                id="address"
-                name="address"
-                required
-                rows={2}
-                autoComplete="street-address"
-                value={form.address}
-                onChange={(event) => updateField('address', event.target.value)}
-              />
-            </div>
-
-            <fieldset className="form-fieldset">
-              <legend>Do you have branches?</legend>
-              <div className="choice-row" role="radiogroup" aria-label="Do you have branches?">
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="hasBranches"
-                    value="yes"
-                    checked={form.hasBranches === 'yes'}
-                    onChange={(event) => updateField('hasBranches', event.target.value)}
+            <div className="form-row form-row-2">
+              <div className="form-field">
+                <label htmlFor="tenantLogo">Tenant logo</label>
+                <input
+                  id="tenantLogo"
+                  name="tenantLogo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                />
+                {logoPreview ? (
+                  <img
+                    src={logoPreview}
+                    alt={`Preview of ${form.tenantName || 'tenant'} logo`}
+                    className="logo-preview"
                   />
-                  Yes
-                </label>
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="hasBranches"
-                    value="no"
-                    checked={form.hasBranches === 'no'}
-                    onChange={() => {
-                      setForm((prev) => ({
-                        ...prev,
-                        hasBranches: 'no',
-                        branches: [{ ...EMPTY_BRANCH }],
-                      }))
-                    }}
-                  />
-                  No
-                </label>
+                ) : null}
               </div>
 
-              {form.hasBranches === 'yes' ? (
-                <div className="branches-fields">
-                  <p className="branches-hint">
-                    Add each branch under this tenant.
-                  </p>
-                  {form.branches.map((branch, index) => (
-                    <div key={index} className="branch-block">
-                      <div className="branch-block-header">
-                        <span>Branch {index + 1}</span>
-                        {form.branches.length > 1 ? (
-                          <button
-                            type="button"
-                            className="branch-remove"
-                            onClick={() => removeBranch(index)}
-                          >
-                            Remove
-                          </button>
-                        ) : null}
-                      </div>
+              <div className="form-field">
+                <label htmlFor="address">Address</label>
+                <textarea
+                  id="address"
+                  name="address"
+                  required
+                  rows={2}
+                  autoComplete="street-address"
+                  value={form.address}
+                  onChange={(event) => updateField('address', event.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="form-row form-row-3 choices-grid">
+              <fieldset className="form-fieldset form-fieldset-inline">
+                <legend>Do you have branches?</legend>
+                <div className="choice-row" role="radiogroup" aria-label="Do you have branches?">
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="hasBranches"
+                      value="yes"
+                      checked={form.hasBranches === 'yes'}
+                      onChange={(event) => updateField('hasBranches', event.target.value)}
+                    />
+                    Yes
+                  </label>
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="hasBranches"
+                      value="no"
+                      checked={form.hasBranches === 'no'}
+                      onChange={() => {
+                        setForm((prev) => ({
+                          ...prev,
+                          hasBranches: 'no',
+                          branches: [{ ...EMPTY_BRANCH }],
+                        }))
+                      }}
+                    />
+                    No
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset className="form-fieldset form-fieldset-inline">
+                <legend>Ops admin?</legend>
+                <div className="choice-row" role="radiogroup" aria-label="Do you want an ops admin?">
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="wantsOpsAdmin"
+                      value="yes"
+                      checked={form.wantsOpsAdmin === 'yes'}
+                      onChange={(event) => updateField('wantsOpsAdmin', event.target.value)}
+                    />
+                    Yes
+                  </label>
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="wantsOpsAdmin"
+                      value="no"
+                      checked={form.wantsOpsAdmin === 'no'}
+                      onChange={(event) => updateField('wantsOpsAdmin', event.target.value)}
+                    />
+                    No
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset className="form-fieldset form-fieldset-inline">
+                <legend>Customized website?</legend>
+                <div
+                  className="choice-row"
+                  role="radiogroup"
+                  aria-label="Do you want a customized website?"
+                >
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="customizeWebsite"
+                      value="yes"
+                      checked={form.customizeWebsite === 'yes'}
+                      onChange={(event) => updateField('customizeWebsite', event.target.value)}
+                    />
+                    Yes
+                  </label>
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="customizeWebsite"
+                      value="no"
+                      checked={form.customizeWebsite === 'no'}
+                      onChange={(event) => updateField('customizeWebsite', event.target.value)}
+                    />
+                    No
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+
+            {form.hasBranches === 'yes' ? (
+              <div className="branches-fields">
+                <p className="branches-hint">Add each branch under this tenant.</p>
+                {form.branches.map((branch, index) => (
+                  <div key={index} className="branch-block">
+                    <div className="branch-block-header">
+                      <span>Branch {index + 1}</span>
+                      {form.branches.length > 1 ? (
+                        <button
+                          type="button"
+                          className="branch-remove"
+                          onClick={() => removeBranch(index)}
+                        >
+                          Remove
+                        </button>
+                      ) : null}
+                    </div>
+                    <div className="form-row form-row-2">
                       <div className="form-field">
                         <label htmlFor={`branch-name-${index}`}>Branch name</label>
                         <input
@@ -269,41 +329,17 @@ function TenantOnboardingForm() {
                         />
                       </div>
                     </div>
-                  ))}
-                  <button type="button" className="branch-add" onClick={addBranch}>
-                    Add another branch
-                  </button>
-                </div>
-              ) : null}
-            </fieldset>
-
-            <fieldset className="form-fieldset">
-              <legend>Do you want an ops admin?</legend>
-              <div className="choice-row" role="radiogroup" aria-label="Do you want an ops admin?">
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="wantsOpsAdmin"
-                    value="yes"
-                    checked={form.wantsOpsAdmin === 'yes'}
-                    onChange={(event) => updateField('wantsOpsAdmin', event.target.value)}
-                  />
-                  Yes
-                </label>
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="wantsOpsAdmin"
-                    value="no"
-                    checked={form.wantsOpsAdmin === 'no'}
-                    onChange={(event) => updateField('wantsOpsAdmin', event.target.value)}
-                  />
-                  No
-                </label>
+                  </div>
+                ))}
+                <button type="button" className="branch-add" onClick={addBranch}>
+                  Add another branch
+                </button>
               </div>
+            ) : null}
 
-              {form.wantsOpsAdmin === 'yes' ? (
-                <div className="form-field form-field-nested">
+            {form.wantsOpsAdmin === 'yes' ? (
+              <div className="form-row form-row-2">
+                <div className="form-field">
                   <label htmlFor="opsEmail">Ops admin email</label>
                   <input
                     id="opsEmail"
@@ -315,48 +351,50 @@ function TenantOnboardingForm() {
                     onChange={(event) => updateField('opsEmail', event.target.value)}
                   />
                 </div>
-              ) : null}
-            </fieldset>
-
-            <fieldset className="form-fieldset">
-              <legend>Do you already have a domain?</legend>
-              <div className="choice-row" role="radiogroup" aria-label="Do you already have a domain?">
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="hasDomain"
-                    value="yes"
-                    checked={form.hasDomain === 'yes'}
-                    onChange={() => {
-                      setForm((prev) => ({
-                        ...prev,
-                        hasDomain: 'yes',
-                        slug: '',
-                      }))
-                    }}
-                  />
-                  Yes
-                </label>
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="hasDomain"
-                    value="no"
-                    checked={form.hasDomain === 'no'}
-                    onChange={() => {
-                      setForm((prev) => ({
-                        ...prev,
-                        hasDomain: 'no',
-                        customDomain: '',
-                      }))
-                    }}
-                  />
-                  No
-                </label>
               </div>
+            ) : null}
+
+            <div className="form-row form-row-2">
+              <fieldset className="form-fieldset form-fieldset-inline">
+                <legend>Do you already have a domain?</legend>
+                <div className="choice-row" role="radiogroup" aria-label="Do you already have a domain?">
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="hasDomain"
+                      value="yes"
+                      checked={form.hasDomain === 'yes'}
+                      onChange={() => {
+                        setForm((prev) => ({
+                          ...prev,
+                          hasDomain: 'yes',
+                          slug: '',
+                        }))
+                      }}
+                    />
+                    Yes
+                  </label>
+                  <label className="choice">
+                    <input
+                      type="radio"
+                      name="hasDomain"
+                      value="no"
+                      checked={form.hasDomain === 'no'}
+                      onChange={() => {
+                        setForm((prev) => ({
+                          ...prev,
+                          hasDomain: 'no',
+                          customDomain: '',
+                        }))
+                      }}
+                    />
+                    No
+                  </label>
+                </div>
+              </fieldset>
 
               {form.hasDomain === 'yes' ? (
-                <div className="form-field form-field-nested">
+                <div className="form-field">
                   <label htmlFor="customDomain">Your domain</label>
                   <input
                     id="customDomain"
@@ -369,7 +407,7 @@ function TenantOnboardingForm() {
                   />
                 </div>
               ) : (
-                <div className="form-field form-field-nested">
+                <div className="form-field">
                   <label htmlFor="slug">Choose a subdomain</label>
                   <div className="domain-input-wrap">
                     <input
@@ -391,37 +429,7 @@ function TenantOnboardingForm() {
                   </p>
                 </div>
               )}
-            </fieldset>
-
-            <fieldset className="form-fieldset">
-              <legend>Do you want a customized website?</legend>
-              <div
-                className="choice-row"
-                role="radiogroup"
-                aria-label="Do you want a customized website?"
-              >
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="customizeWebsite"
-                    value="yes"
-                    checked={form.customizeWebsite === 'yes'}
-                    onChange={(event) => updateField('customizeWebsite', event.target.value)}
-                  />
-                  Yes
-                </label>
-                <label className="choice">
-                  <input
-                    type="radio"
-                    name="customizeWebsite"
-                    value="no"
-                    checked={form.customizeWebsite === 'no'}
-                    onChange={(event) => updateField('customizeWebsite', event.target.value)}
-                  />
-                  No
-                </label>
-              </div>
-            </fieldset>
+            </div>
 
             <button type="submit" className="onboarding-submit">
               Submit onboarding request
