@@ -122,7 +122,7 @@ function TenantOnboardingForm() {
           <form className="onboarding-form" onSubmit={handleSubmit} noValidate={false}>
             <div className="form-row form-row-3">
               <div className="form-field">
-                <label htmlFor="tenantName">Tenant name</label>
+                <label htmlFor="tenantName">Organization name</label>
                 <input
                   id="tenantName"
                   name="tenantName"
