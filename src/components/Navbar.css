@@ -74,6 +74,10 @@
   transition: color 0.25s ease;
 }
 
+.navbar-links a.active {
+  color: var(--color-primary);
+}
+
 .navbar-links a::after {
   content: '';
   position: absolute;
@@ -95,6 +99,24 @@
   transform: scaleX(1);
 }
 
+.navbar-user {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.navbar-user-name {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+}
+
 .navbar-login {
   justify-self: end;
   display: inline-flex;
@@ -109,6 +131,7 @@
   font: inherit;
   font-weight: 600;
   font-size: 0.95rem;
+  text-decoration: none;
   cursor: pointer;
   transition:
     background 0.25s ease,
@@ -125,6 +148,13 @@
 
 .navbar-login:active {
   transform: translateY(0);
+}
+
+.navbar-login:disabled {
+  opacity: 0.75;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
 }
 
 @media (max-width: 640px) {

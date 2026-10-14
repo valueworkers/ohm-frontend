@@ -1,0 +1,256 @@
+.tenant-detail {
+  flex: 1;
+  padding: 1.5rem 1.25rem 2.5rem;
+  background:
+    radial-gradient(ellipse at top right, rgba(126, 181, 177, 0.2), transparent 50%),
+    var(--color-surface);
+}
+
+.tenant-detail-inner {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.tenant-detail-back {
+  margin: 0 0 1rem;
+}
+
+.tenant-detail-back a {
+  color: var(--color-primary-mid);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tenant-detail-back a:hover {
+  text-decoration: underline;
+}
+
+.tenant-detail-state {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-ink-muted);
+}
+
+.tenant-detail-state.is-error {
+  color: #8a1f11;
+  background: #fdecea;
+  border-color: #f0c2bb;
+}
+
+.tenant-detail-card {
+  padding: 1.35rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  animation: rise-in 0.4s var(--ease-out);
+}
+
+.tenant-detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tenant-detail-identity {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.tenant-detail-logo,
+.tenant-detail-logo-fallback {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.tenant-detail-logo {
+  object-fit: cover;
+}
+
+.tenant-detail-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.section-eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.tenant-detail-header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  color: var(--color-primary);
+}
+
+.tenant-detail-domain {
+  margin: 0.3rem 0 0;
+  font-weight: 600;
+  color: var(--color-primary-mid);
+}
+
+.tenant-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  background: var(--color-surface-soft);
+  color: var(--color-primary-mid);
+}
+
+.tenant-status.is-provisioning {
+  background: #fff4e8;
+  color: #a85a1a;
+}
+
+.tenant-status.is-active {
+  background: #e7f6ef;
+  color: #1f6a4a;
+}
+
+.tenant-detail-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+}
+
+.tenant-detail-grid div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.tenant-detail-grid dt {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.tenant-detail-grid dd {
+  margin: 0;
+  color: var(--color-ink);
+  word-break: break-word;
+}
+
+.tenant-detail-section {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.tenant-detail-section h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+}
+
+.tenant-detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.tenant-detail-list li {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-soft);
+}
+
+.tenant-detail-list strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.tenant-detail-list p {
+  margin: 0.25rem 0 0;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.tenant-detail-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.domain-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #fff;
+  color: var(--color-ink-muted);
+}
+
+.domain-pill.is-verified {
+  background: #e7f6ef;
+  color: #1f6a4a;
+}
+
+.tenant-detail-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.tenant-detail-chips li {
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.tenant-detail-muted {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
+
+@media (min-width: 700px) {
+  .tenant-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tenant-detail-card {
+    padding: 1.5rem 1.5rem;
+  }
+}

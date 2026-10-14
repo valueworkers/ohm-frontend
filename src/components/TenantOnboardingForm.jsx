@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { checkSlugAvailability, submitOnboardingRequest } from '../api/onboarding'
 import { useReveal } from '../hooks/useReveal'
 import './TenantOnboardingForm.css'
 
@@ -55,10 +56,53 @@ function TenantOnboardingForm() {
   const [form, setForm] = useState(INITIAL_FORM)
   const [logoPreview, setLogoPreview] = useState('')
   const [status, setStatus] = useState('idle')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [slugStatus, setSlugStatus] = useState({
+    state: 'idle',
+    message: '',
+  })
 
   function updateField(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
+
+  useEffect(() => {
+    const cleanSlug = form.slug
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
+
+    if (!cleanSlug) {
+      setSlugStatus({ state: 'idle', message: '' })
+      return undefined
+    }
+
+    let cancelled = false
+    setSlugStatus({ state: 'checking', message: 'Checking availability…' })
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const result = await checkSlugAvailability(cleanSlug)
+        if (cancelled) return
+        setSlugStatus({
+          state: result.available ? 'available' : 'taken',
+          message: result.message,
+        })
+      } catch (error) {
+        if (cancelled) return
+        setSlugStatus({
+          state: 'error',
+          message: error.message || 'Could not check subdomain.',
+        })
+      }
+    }, 450)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [form.slug])
 
   function updateBranch(index, field, value) {
     setForm((prev) => ({
@@ -98,9 +142,69 @@ function TenantOnboardingForm() {
     }
   }
 
-  function handleSubmit(event) {
+  const sanitizedSlug = form.slug
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '')
+
+  const ohmPreviewUrl = sanitizedSlug ? `${sanitizedSlug}.o-hm.com` : 'example.o-hm.com'
+
+  async function handleSubmit(event) {
     event.preventDefault()
-    setStatus('submitted')
+    setErrorMessage('')
+
+    if (!form.tenantName.trim()) {
+      setErrorMessage('Organization name is required.')
+      return
+    }
+    if (!form.email.trim()) {
+      setErrorMessage('Email is required.')
+      return
+    }
+    if (!/^\d{10}$/.test(form.phone.trim())) {
+      setErrorMessage('Enter a 10-digit phone number.')
+      return
+    }
+
+    if (form.hasBranches === 'yes') {
+      const hasValidBranch = form.branches.some(
+        (branch) => branch.name.trim() && branch.address.trim()
+      )
+      if (!hasValidBranch) {
+        setErrorMessage('Add at least one branch with name and address.')
+        return
+      }
+    }
+
+    if (!sanitizedSlug) {
+      setErrorMessage('Subdomain (slug) is required.')
+      return
+    }
+    if (slugStatus.state === 'checking') {
+      setErrorMessage('Please wait while we check subdomain availability.')
+      return
+    }
+    if (slugStatus.state === 'taken' || slugStatus.state === 'error') {
+      setErrorMessage(
+        slugStatus.message || 'Choose an available subdomain before submitting.'
+      )
+      return
+    }
+    if (slugStatus.state !== 'available') {
+      setErrorMessage('Choose an available subdomain before submitting.')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await submitOnboardingRequest(form)
+      setStatus('submitted')
+    } catch (error) {
+      setErrorMessage(error.message || 'Could not submit onboarding request.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   function handleReset() {
@@ -110,14 +214,9 @@ function TenantOnboardingForm() {
     setForm(INITIAL_FORM)
     setLogoPreview('')
     setStatus('idle')
+    setErrorMessage('')
+    setSlugStatus({ state: 'idle', message: '' })
   }
-
-  const sanitizedSlug = form.slug
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '')
-
-  const ohmPreviewUrl = sanitizedSlug ? `${sanitizedSlug}.o-hm.com` : 'example.o-hm.com'
   const branchCount =
     form.hasBranches === 'yes'
       ? form.branches.filter((branch) => branch.name.trim()).length
@@ -201,9 +300,16 @@ function TenantOnboardingForm() {
                     name="phone"
                     type="tel"
                     required
+                    inputMode="numeric"
                     autoComplete="tel"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                    title="Enter a 10-digit phone number"
                     value={form.phone}
-                    onChange={(event) => updateField('phone', event.target.value)}
+                    onChange={(event) => {
+                      const digits = event.target.value.replace(/\D/g, '').slice(0, 10)
+                      updateField('phone', digits)
+                    }}
                   />
                 </div>
               </div>
@@ -382,13 +488,7 @@ function TenantOnboardingForm() {
                   name="hasDomain"
                   legend="Do you already have a domain?"
                   value={form.hasDomain}
-                  onYes={() => {
-                    setForm((prev) => ({
-                      ...prev,
-                      hasDomain: 'yes',
-                      slug: '',
-                    }))
-                  }}
+                  onYes={(event) => updateField('hasDomain', event.target.value)}
                   onNo={() => {
                     setForm((prev) => ({
                       ...prev,
@@ -411,38 +511,61 @@ function TenantOnboardingForm() {
                       onChange={(event) => updateField('customDomain', event.target.value)}
                     />
                   </div>
-                ) : (
-                  <div className="form-field">
-                    <label htmlFor="slug">Choose a subdomain</label>
-                    <div className="domain-input-wrap">
-                      <input
-                        id="slug"
-                        name="slug"
-                        type="text"
-                        required
-                        placeholder="example"
-                        value={form.slug}
-                        onChange={(event) => updateField('slug', event.target.value)}
-                        aria-describedby="domain-preview"
-                      />
-                      <span className="domain-suffix" aria-hidden="true">
-                        .o-hm.com
-                      </span>
-                    </div>
-                    <p id="domain-preview" className="domain-preview">
-                      {ohmPreviewUrl} will be their website
-                    </p>
+                ) : null}
+              </div>
+
+              <div className="form-row form-row-2">
+                <div className="form-field">
+                  <label htmlFor="slug">Choose a subdomain</label>
+                  <div className="domain-input-wrap">
+                    <input
+                      id="slug"
+                      name="slug"
+                      type="text"
+                      required
+                      placeholder="example"
+                      value={form.slug}
+                      onChange={(event) => updateField('slug', event.target.value)}
+                      aria-describedby="domain-preview slug-availability"
+                      aria-invalid={slugStatus.state === 'taken' || slugStatus.state === 'error'}
+                    />
+                    <span className="domain-suffix" aria-hidden="true">
+                      .o-hm.com
+                    </span>
                   </div>
-                )}
+                  <p id="domain-preview" className="domain-preview">
+                    {ohmPreviewUrl} will be their website
+                  </p>
+                  {slugStatus.message ? (
+                    <p
+                      id="slug-availability"
+                      className={`slug-availability is-${slugStatus.state}`}
+                      role="status"
+                    >
+                      {slugStatus.message}
+                    </p>
+                  ) : null}
+                </div>
               </div>
             </section>
 
             <div className="form-actions">
-              <p className="form-actions-note">
-                No payment needed now — we will review and follow up by email.
-              </p>
-              <button type="submit" className="onboarding-submit">
-                Submit onboarding request
+              <div className="form-actions-copy">
+                <p className="form-actions-note">
+                  No payment needed now — we will review and follow up by email.
+                </p>
+                {errorMessage ? (
+                  <p className="form-error" role="alert">
+                    {errorMessage}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                type="submit"
+                className="onboarding-submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting…' : 'Submit onboarding request'}
               </button>
             </div>
           </form>
