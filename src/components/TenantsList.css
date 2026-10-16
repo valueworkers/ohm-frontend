@@ -32,7 +32,6 @@
   color: var(--color-ink-muted);
 }
 
-.tenants-empty,
 .tenants-state {
   margin: 0;
   padding: 1.1rem 1.15rem;
@@ -40,29 +39,6 @@
   border-radius: 12px;
   background: #fff;
   color: var(--color-ink-muted);
-}
-
-.tenants-empty {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem 1rem;
-}
-
-.tenants-empty p {
-  margin: 0;
-}
-
-.tenants-login-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0.35rem 0.8rem;
-  border-radius: var(--radius-control);
-  background: var(--color-primary);
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
 }
 
 .tenants-state.is-error {

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
-import { isAuthenticated } from '../api/auth'
+import { Link, useParams } from 'react-router-dom'
 import { getTenant } from '../api/tenants'
 import './TenantDetailPage.css'
 
@@ -23,8 +22,6 @@ function TenantDetailPage() {
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
-    if (!isAuthenticated()) return undefined
-
     let cancelled = false
     setIsLoading(true)
     setErrorMessage('')
@@ -47,10 +44,6 @@ function TenantDetailPage() {
       cancelled = true
     }
   }, [tenantId])
-
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />
-  }
 
   const primaryDomain =
     tenant?.domains?.find((domain) => domain.is_primary)?.domain ||

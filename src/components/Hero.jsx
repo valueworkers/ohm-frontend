@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import heroImage from '../assets/adver.jpeg'
 import './Hero.css'
 
@@ -5,21 +6,22 @@ function Hero() {
   return (
     <section id="home" className="hero" aria-labelledby="hero-brand">
       <div className="hero-content">
-        <p className="hero-eyebrow">Senior care aggregator</p>
+        <p className="hero-eyebrow">One unified platform</p>
         <p id="hero-brand" className="hero-brand">
           O-HM
         </p>
-        <h1 className="hero-title">One platform for complete senior care management</h1>
+        <h1 className="hero-title">One platform for complete care management</h1>
         <p className="hero-lead">
-          You care for seniors. We simplify your operations — attendance, bookings,
-          payments, leads, marketing, and your own website.
+          One unified platform for senior care, pharma care, and more. We simplify
+          your operations: attendance, bookings, payments, leads, marketing, and
+          your own website.
         </p>
         <div className="hero-actions">
-          <a href="#onboarding" className="hero-cta">
+          <Link to="/book-care" className="hero-cta">
+            Book a caregiver
+          </Link>
+          <a href="#onboarding" className="hero-cta-secondary">
             Onboard your care community
-          </a>
-          <a href="#tenants" className="hero-cta-secondary">
-            Browse providers
           </a>
         </div>
       </div>

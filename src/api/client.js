@@ -9,10 +9,18 @@ const FIELD_LABELS = {
   organization_name: 'Organization name',
   email: 'Email',
   contact_phone: 'Phone number',
+  gst_number: 'GST number',
   branches: 'Branches',
   slug: 'Subdomain',
   address: 'Address',
+  address_line_1: 'Address line 1',
+  address_line_2: 'Address line 2',
+  locality: 'Locality',
+  city: 'City',
+  pincode: 'Pincode',
+
   custom_domain: 'Domain',
+  co_owner_emails: 'Co-owner emails',
   ops_admin_email: 'Ops admin email',
 }
 

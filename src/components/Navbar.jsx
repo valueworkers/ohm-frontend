@@ -52,6 +52,7 @@ function Navbar() {
             Home
           </NavLink>
           <Link to="/#about">About Us</Link>
+          <NavLink to="/pricing">Pricing</NavLink>
         </nav>
 
         {session?.access ? (

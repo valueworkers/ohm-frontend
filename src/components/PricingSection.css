@@ -1,0 +1,212 @@
+.pricing {
+  padding: 2.5rem 1.25rem 3.5rem;
+  background:
+    radial-gradient(ellipse at top right, rgba(126, 181, 177, 0.18), transparent 45%),
+    var(--color-surface);
+}
+
+.pricing-inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.pricing-intro {
+  margin-bottom: 1.75rem;
+  max-width: 40rem;
+}
+
+.pricing .section-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.pricing h2 {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.pricing-lead {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 1.1rem;
+  color: var(--color-ink-muted);
+}
+
+.pricing-status {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-ink-muted);
+}
+
+.pricing-status.is-error {
+  color: #8a1f11;
+  font-weight: 600;
+}
+
+.pricing-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.pricing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1.45rem 1.25rem 1.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(17, 77, 74, 0.05);
+  overflow: hidden;
+  transition:
+    transform 0.4s var(--ease-out),
+    box-shadow 0.4s ease,
+    border-color 0.35s ease;
+}
+
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary-light), var(--color-primary));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s var(--ease-out);
+}
+
+.pricing.is-revealed .pricing-card {
+  opacity: 0;
+  animation: rise-in 0.75s var(--ease-out) both;
+}
+
+.pricing.is-revealed .pricing-card.reveal-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.pricing.is-revealed .pricing-card.reveal-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.pricing.is-revealed .pricing-card.reveal-delay-3 {
+  animation-delay: 0.3s;
+}
+
+.pricing-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-lift);
+}
+
+.pricing-card:hover::before {
+  transform: scaleX(1);
+}
+
+.pricing-card.is-featured {
+  border-color: var(--color-primary-mid);
+  background:
+    linear-gradient(180deg, #eaf4f3 0%, #fff 42%);
+  box-shadow: var(--shadow-soft);
+}
+
+.pricing-card.is-featured::before {
+  transform: scaleX(1);
+}
+
+.pricing-card-badge {
+  align-self: flex-start;
+  margin: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pricing-card-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.pricing-card-price {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-ink);
+}
+
+.pricing-card-desc,
+.pricing-card-meta {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-ink-muted);
+}
+
+.pricing-card-features {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.pricing-card-features li {
+  position: relative;
+  padding-left: 1.15rem;
+  font-size: 1rem;
+  color: var(--color-ink);
+}
+
+.pricing-card-features li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--color-primary-mid);
+}
+
+@media (min-width: 768px) {
+  .pricing {
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .pricing-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.15rem;
+    align-items: stretch;
+  }
+
+  .pricing-card.is-featured {
+    transform: translateY(-8px);
+  }
+
+  .pricing-card.is-featured:hover {
+    transform: translateY(-12px);
+  }
+}

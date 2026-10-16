@@ -1,27 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { checkSlugAvailability, submitOnboardingRequest } from '../api/onboarding'
-import { fetchPlans } from '../api/plans'
 import { useReveal } from '../hooks/useReveal'
 import { compressImage } from '../utils/compressImage'
 import './TenantOnboardingForm.css'
 
 const EMPTY_BRANCH = { name: '', address: '' }
 
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/
+
+const MAX_CO_OWNERS = 3
+
 const INITIAL_FORM = {
   tenantName: '',
   tenantLogo: null,
   email: '',
   phone: '',
-  address: '',
-  wantsOpsAdmin: 'no',
-  opsEmail: '',
+  gst: '',
+  addressLine1: '',
+  addressLine2: '',
+  locality: '',
+  city: '',
+  pincode: '',
+  wantsCoOwners: 'no',
+  coOwnerEmails: [''],
   hasBranches: 'no',
   branches: [{ ...EMPTY_BRANCH }],
   hasDomain: 'no',
   customDomain: '',
   slug: '',
   customizeWebsite: 'no',
-  requestedPlan: null,
 }
 
 function YesNo({ name, legend, value, onYes, onNo }) {
@@ -56,54 +63,22 @@ function YesNo({ name, legend, value, onYes, onNo }) {
 
 function TenantOnboardingForm() {
   const sectionRef = useReveal()
+  const successTitleId = useId()
+  const closeModalRef = useRef(null)
   const [form, setForm] = useState(INITIAL_FORM)
   const [logoPreview, setLogoPreview] = useState('')
-  const [status, setStatus] = useState('idle')
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [submittedSummary, setSubmittedSummary] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [slugStatus, setSlugStatus] = useState({
     state: 'idle',
     message: '',
   })
-  const [plans, setPlans] = useState([])
-  const [plansState, setPlansState] = useState('loading')
-  const [plansError, setPlansError] = useState('')
 
   function updateField(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadPlans() {
-      setPlansState('loading')
-      setPlansError('')
-      try {
-        const list = await fetchPlans()
-        if (cancelled) return
-        setPlans(list)
-        setPlansState(list.length ? 'ready' : 'empty')
-        if (list.length === 1) {
-          setForm((prev) =>
-            prev.requestedPlan == null
-              ? { ...prev, requestedPlan: list[0].id }
-              : prev
-          )
-        }
-      } catch (error) {
-        if (cancelled) return
-        setPlans([])
-        setPlansState('error')
-        setPlansError(error.message || 'Could not load plans.')
-      }
-    }
-
-    loadPlans()
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   useEffect(() => {
     const cleanSlug = form.slug
@@ -113,6 +88,14 @@ function TenantOnboardingForm() {
 
     if (!cleanSlug) {
       setSlugStatus({ state: 'idle', message: '' })
+      return undefined
+    }
+
+    if (cleanSlug.length < 3) {
+      setSlugStatus({
+        state: 'error',
+        message: 'Subdomain must be at least 3 characters.',
+      })
       return undefined
     }
 
@@ -162,6 +145,35 @@ function TenantOnboardingForm() {
     setForm((prev) => ({
       ...prev,
       branches: prev.branches.filter((_, i) => i !== index),
+    }))
+  }
+
+  function updateCoOwnerEmail(index, value) {
+    setForm((prev) => ({
+      ...prev,
+      coOwnerEmails: prev.coOwnerEmails.map((email, i) =>
+        i === index ? value : email
+      ),
+    }))
+  }
+
+  function addCoOwnerEmail() {
+    setForm((prev) => {
+      if (prev.coOwnerEmails.length >= MAX_CO_OWNERS) return prev
+      return {
+        ...prev,
+        coOwnerEmails: [...prev.coOwnerEmails, ''],
+      }
+    })
+  }
+
+  function removeCoOwnerEmail(index) {
+    setForm((prev) => ({
+      ...prev,
+      coOwnerEmails:
+        prev.coOwnerEmails.length <= 1
+          ? ['']
+          : prev.coOwnerEmails.filter((_, i) => i !== index),
     }))
   }
 
@@ -219,6 +231,28 @@ function TenantOnboardingForm() {
       setErrorMessage('Enter a 10-digit phone number.')
       return
     }
+    if (!form.addressLine1.trim()) {
+      setErrorMessage('Address line 1 is required.')
+      return
+    }
+    if (!form.locality.trim()) {
+      setErrorMessage('Locality is required.')
+      return
+    }
+    if (!form.city.trim()) {
+      setErrorMessage('City is required.')
+      return
+    }
+    if (!/^\d{6}$/.test(form.pincode.trim())) {
+      setErrorMessage('Enter a valid 6-digit pincode.')
+      return
+    }
+
+    const gst = form.gst.trim().toUpperCase()
+    if (gst && !GSTIN_PATTERN.test(gst)) {
+      setErrorMessage('Enter a valid 15-character GSTIN.')
+      return
+    }
 
     if (form.hasBranches === 'yes') {
       const hasValidBranch = form.branches.some(
@@ -230,34 +264,71 @@ function TenantOnboardingForm() {
       }
     }
 
-    if (!sanitizedSlug) {
-      setErrorMessage('Subdomain (slug) is required.')
-      return
-    }
-    if (slugStatus.state === 'checking') {
-      setErrorMessage('Please wait while we check subdomain availability.')
-      return
-    }
-    if (slugStatus.state === 'taken' || slugStatus.state === 'error') {
-      setErrorMessage(
-        slugStatus.message || 'Choose an available subdomain before submitting.'
+    if (form.wantsCoOwners === 'yes') {
+      const emails = form.coOwnerEmails
+        .map((email) => email.trim())
+        .filter(Boolean)
+      if (emails.length === 0) {
+        setErrorMessage('Add at least one co-owner email.')
+        return
+      }
+      if (emails.length > MAX_CO_OWNERS) {
+        setErrorMessage(`You can add up to ${MAX_CO_OWNERS} co-owners.`)
+        return
+      }
+      const invalidEmail = emails.find(
+        (email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
       )
-      return
+      if (invalidEmail) {
+        setErrorMessage(`Enter a valid co-owner email (${invalidEmail}).`)
+        return
+      }
     }
-    if (slugStatus.state !== 'available') {
-      setErrorMessage('Choose an available subdomain before submitting.')
-      return
-    }
-    if (form.requestedPlan == null) {
-      setErrorMessage('Select a plan to continue.')
-      return
+
+    if (form.hasDomain === 'yes') {
+      if (!form.customDomain.trim()) {
+        setErrorMessage('Enter your domain.')
+        return
+      }
+    } else {
+      if (!sanitizedSlug) {
+        setErrorMessage('Subdomain (slug) is required.')
+        return
+      }
+      if (sanitizedSlug.length < 3) {
+        setErrorMessage('Subdomain must be at least 3 characters.')
+        return
+      }
+      if (slugStatus.state === 'checking') {
+        setErrorMessage('Please wait while we check subdomain availability.')
+        return
+      }
+      if (slugStatus.state === 'taken' || slugStatus.state === 'error') {
+        setErrorMessage(
+          slugStatus.message || 'Choose an available subdomain before submitting.'
+        )
+        return
+      }
+      if (slugStatus.state !== 'available') {
+        setErrorMessage('Choose an available subdomain before submitting.')
+        return
+      }
     }
 
     setIsSubmitting(true)
 
     try {
-      await submitOnboardingRequest(form)
-      setStatus('submitted')
+      await submitOnboardingRequest({ ...form, gst })
+      const branchCount =
+        form.hasBranches === 'yes'
+          ? form.branches.filter((branch) => branch.name.trim()).length
+          : 0
+      setSubmittedSummary({
+        tenantName: form.tenantName.trim(),
+        email: form.email.trim(),
+        branchCount,
+      })
+      setIsSuccessModalOpen(true)
     } catch (error) {
       setErrorMessage(error.message || 'Could not submit onboarding request.')
     } finally {
@@ -265,20 +336,37 @@ function TenantOnboardingForm() {
     }
   }
 
-  function handleReset() {
+  function handleCloseSuccessModal() {
     if (logoPreview) {
       URL.revokeObjectURL(logoPreview)
     }
     setForm(INITIAL_FORM)
     setLogoPreview('')
-    setStatus('idle')
     setErrorMessage('')
     setSlugStatus({ state: 'idle', message: '' })
+    setSubmittedSummary(null)
+    setIsSuccessModalOpen(false)
   }
-  const branchCount =
-    form.hasBranches === 'yes'
-      ? form.branches.filter((branch) => branch.name.trim()).length
-      : 0
+
+  useEffect(() => {
+    if (!isSuccessModalOpen) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    closeModalRef.current?.focus()
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        handleCloseSuccessModal()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isSuccessModalOpen])
 
   return (
     <section
@@ -297,22 +385,7 @@ function TenantOnboardingForm() {
           </p>
         </header>
 
-        {status === 'submitted' ? (
-          <div className="onboarding-success" role="status">
-            <p className="onboarding-success-title">Request received</p>
-            <p>
-              Thanks — we recorded <strong>{form.tenantName}</strong>
-              {branchCount > 0
-                ? ` with ${branchCount} branch${branchCount === 1 ? '' : 'es'}`
-                : ''}
-              . Our team will follow up at {form.email}.
-            </p>
-            <button type="button" className="onboarding-secondary-btn" onClick={handleReset}>
-              Submit another tenant
-            </button>
-          </div>
-        ) : (
-          <form className="onboarding-form" onSubmit={handleSubmit}>
+        <form className="onboarding-form" onSubmit={handleSubmit}>
             <section className="form-section" aria-labelledby="basics-heading">
               <div className="form-section-head">
                 <span className="form-step" aria-hidden="true">
@@ -339,7 +412,7 @@ function TenantOnboardingForm() {
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Primary Email</label>
                   <input
                     id="email"
                     name="email"
@@ -367,6 +440,30 @@ function TenantOnboardingForm() {
                     onChange={(event) => {
                       const digits = event.target.value.replace(/\D/g, '').slice(0, 10)
                       updateField('phone', digits)
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row form-row-2">
+                <div className="form-field">
+                  <label htmlFor="gst">GST number</label>
+                  <input
+                    id="gst"
+                    name="gst"
+                    type="text"
+                    inputMode="text"
+                    autoComplete="off"
+                    maxLength={15}
+                    placeholder="22AAAAA0000A1Z5"
+                    spellCheck={false}
+                    value={form.gst}
+                    onChange={(event) => {
+                      const next = event.target.value
+                        .toUpperCase()
+                        .replace(/[^0-9A-Z]/g, '')
+                        .slice(0, 15)
+                      updateField('gst', next)
                     }}
                   />
                 </div>
@@ -402,15 +499,85 @@ function TenantOnboardingForm() {
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="address">Address</label>
-                  <textarea
-                    id="address"
-                    name="address"
+                  <label htmlFor="addressLine1">Address line 1</label>
+                  <input
+                    id="addressLine1"
+                    name="addressLine1"
+                    type="text"
                     required
-                    rows={3}
-                    autoComplete="street-address"
-                    value={form.address}
-                    onChange={(event) => updateField('address', event.target.value)}
+                    autoComplete="address-line1"
+                    value={form.addressLine1}
+                    onChange={(event) =>
+                      updateField('addressLine1', event.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="addressLine2">Address line 2</label>
+                  <input
+                    id="addressLine2"
+                    name="addressLine2"
+                    type="text"
+                    autoComplete="address-line2"
+                    value={form.addressLine2}
+                    onChange={(event) =>
+                      updateField('addressLine2', event.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="form-row form-row-3">
+                <div className="form-field">
+                  <label htmlFor="locality">Locality</label>
+                  <input
+                    id="locality"
+                    name="locality"
+                    type="text"
+                    required
+                    autoComplete="address-level3"
+                    value={form.locality}
+                    onChange={(event) =>
+                      updateField('locality', event.target.value)
+                    }
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="city">City</label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    required
+                    autoComplete="address-level2"
+                    value={form.city}
+                    onChange={(event) => updateField('city', event.target.value)}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="pincode">Pincode</label>
+                  <input
+                    id="pincode"
+                    name="pincode"
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    maxLength={6}
+                    pattern="[0-9]{6}"
+                    title="Enter a 6-digit pincode"
+                    value={form.pincode}
+                    onChange={(event) => {
+                      const digits = event.target.value
+                        .replace(/\D/g, '')
+                        .slice(0, 6)
+                      updateField('pincode', digits)
+                    }}
                   />
                 </div>
               </div>
@@ -430,7 +597,7 @@ function TenantOnboardingForm() {
               <div className="form-row form-row-3">
                 <YesNo
                   name="hasBranches"
-                  legend="Do you have branches?"
+                  legend="Do you have multiple service locations?"
                   value={form.hasBranches}
                   onYes={(event) => updateField('hasBranches', event.target.value)}
                   onNo={() => {
@@ -443,16 +610,22 @@ function TenantOnboardingForm() {
                 />
 
                 <YesNo
-                  name="wantsOpsAdmin"
-                  legend="Need an ops admin?"
-                  value={form.wantsOpsAdmin}
-                  onYes={(event) => updateField('wantsOpsAdmin', event.target.value)}
-                  onNo={(event) => updateField('wantsOpsAdmin', event.target.value)}
+                  name="wantsCoOwners"
+                  legend="Do you need co-owners? (up to 3)"
+                  value={form.wantsCoOwners}
+                  onYes={(event) => updateField('wantsCoOwners', event.target.value)}
+                  onNo={() => {
+                    setForm((prev) => ({
+                      ...prev,
+                      wantsCoOwners: 'no',
+                      coOwnerEmails: [''],
+                    }))
+                  }}
                 />
 
                 <YesNo
                   name="customizeWebsite"
-                  legend="Customized website?"
+                  legend="Do you need a customised website to be developed?"
                   value={form.customizeWebsite}
                   onYes={(event) => updateField('customizeWebsite', event.target.value)}
                   onNo={(event) => updateField('customizeWebsite', event.target.value)}
@@ -512,20 +685,49 @@ function TenantOnboardingForm() {
                 </div>
               ) : null}
 
-              {form.wantsOpsAdmin === 'yes' ? (
-                <div className="form-row form-row-2 conditional-panel">
-                  <div className="form-field">
-                    <label htmlFor="opsEmail">Ops admin email</label>
-                    <input
-                      id="opsEmail"
-                      name="opsEmail"
-                      type="email"
-                      required
-                      autoComplete="email"
-                      value={form.opsEmail}
-                      onChange={(event) => updateField('opsEmail', event.target.value)}
-                    />
-                  </div>
+              {form.wantsCoOwners === 'yes' ? (
+                <div className="co-owners-fields conditional-panel">
+                  <p className="branches-hint">
+                    Add up to {MAX_CO_OWNERS} co-owner emails for this organization.
+                  </p>
+                  {form.coOwnerEmails.map((email, index) => (
+                    <div key={index} className="co-owner-row">
+                      <div className="form-field">
+                        <label htmlFor={`co-owner-email-${index}`}>
+                          Co-owner email {index + 1}
+                        </label>
+                        <input
+                          id={`co-owner-email-${index}`}
+                          name={`coOwnerEmail-${index}`}
+                          type="email"
+                          required
+                          autoComplete="email"
+                          value={email}
+                          onChange={(event) =>
+                            updateCoOwnerEmail(index, event.target.value)
+                          }
+                        />
+                      </div>
+                      {form.coOwnerEmails.length > 1 ? (
+                        <button
+                          type="button"
+                          className="branch-remove"
+                          onClick={() => removeCoOwnerEmail(index)}
+                        >
+                          Remove
+                        </button>
+                      ) : null}
+                    </div>
+                  ))}
+                  {form.coOwnerEmails.length < MAX_CO_OWNERS ? (
+                    <button
+                      type="button"
+                      className="branch-add"
+                      onClick={addCoOwnerEmail}
+                    >
+                      Add another co-owner
+                    </button>
+                  ) : null}
                 </div>
               ) : null}
             </section>
@@ -541,12 +743,19 @@ function TenantOnboardingForm() {
                 </div>
               </div>
 
-              <div className="form-row form-row-2">
+              <div className="domain-choice-row">
                 <YesNo
                   name="hasDomain"
                   legend="Do you already have a domain?"
                   value={form.hasDomain}
-                  onYes={(event) => updateField('hasDomain', event.target.value)}
+                  onYes={() => {
+                    setForm((prev) => ({
+                      ...prev,
+                      hasDomain: 'yes',
+                      slug: '',
+                    }))
+                    setSlugStatus({ state: 'idle', message: '' })
+                  }}
                   onNo={() => {
                     setForm((prev) => ({
                       ...prev,
@@ -557,7 +766,7 @@ function TenantOnboardingForm() {
                 />
 
                 {form.hasDomain === 'yes' ? (
-                  <div className="form-field">
+                  <div className="form-field domain-choice-field">
                     <label htmlFor="customDomain">Your domain</label>
                     <input
                       id="customDomain"
@@ -572,25 +781,29 @@ function TenantOnboardingForm() {
                 ) : null}
               </div>
 
-              <div className="form-row form-row-2">
+              {form.hasDomain === 'no' ? (
                 <div className="form-field">
-                  <label htmlFor="slug">Choose a subdomain</label>
+                  <label htmlFor="slug">You can choose a free subdomain</label>
                   <div className="domain-input-wrap">
                     <input
                       id="slug"
                       name="slug"
                       type="text"
                       required
+                      minLength={3}
                       placeholder="example"
                       value={form.slug}
                       onChange={(event) => updateField('slug', event.target.value)}
-                      aria-describedby="domain-preview slug-availability"
+                      aria-describedby="slug-hint domain-preview slug-availability"
                       aria-invalid={slugStatus.state === 'taken' || slugStatus.state === 'error'}
                     />
                     <span className="domain-suffix" aria-hidden="true">
                       .o-hm.com
                     </span>
                   </div>
+                  <p id="slug-hint" className="domain-preview">
+                    Minimum 3 characters
+                  </p>
                   <p id="domain-preview" className="domain-preview">
                     {ohmPreviewUrl} will be their website
                   </p>
@@ -603,83 +816,6 @@ function TenantOnboardingForm() {
                       {slugStatus.message}
                     </p>
                   ) : null}
-                </div>
-              </div>
-            </section>
-
-            <section className="form-section" aria-labelledby="plan-heading">
-              <div className="form-section-head">
-                <span className="form-step" aria-hidden="true">
-                  4
-                </span>
-                <div>
-                  <h3 id="plan-heading">Choose a plan</h3>
-                  <p>Select the plan for this tenant. Required before submit.</p>
-                </div>
-              </div>
-
-              {plansState === 'loading' ? (
-                <p className="plans-status">Loading plans…</p>
-              ) : null}
-
-              {plansState === 'error' ? (
-                <p className="plans-status is-error" role="alert">
-                  {plansError}
-                </p>
-              ) : null}
-
-              {plansState === 'empty' ? (
-                <p className="plans-status">No plans available right now.</p>
-              ) : null}
-
-              {plansState === 'ready' ? (
-                <div className="plan-options" role="radiogroup" aria-label="Plans">
-                  {plans.map((plan) => {
-                    const isSelected = form.requestedPlan === plan.id
-                    const featureNames = Array.isArray(plan.features)
-                      ? plan.features
-                          .map((feature) => feature?.name)
-                          .filter(Boolean)
-                          .slice(0, 3)
-                      : []
-
-                    return (
-                      <button
-                        key={plan.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        className={`plan-option${isSelected ? ' is-selected' : ''}`}
-                        onClick={() => updateField('requestedPlan', plan.id)}
-                      >
-                        <span className="plan-option-top">
-                          <span className="plan-option-name">{plan.name}</span>
-                          {isSelected ? (
-                            <span className="plan-option-badge">Selected</span>
-                          ) : null}
-                        </span>
-                        {plan.description ? (
-                          <span className="plan-option-desc">{plan.description}</span>
-                        ) : null}
-                        <span className="plan-option-meta">
-                          {plan.max_employees != null
-                            ? `Up to ${plan.max_employees} employees`
-                            : null}
-                          {plan.max_employees != null && plan.max_branches != null
-                            ? ' · '
-                            : null}
-                          {plan.max_branches != null
-                            ? `${plan.max_branches} branches`
-                            : null}
-                        </span>
-                        {featureNames.length ? (
-                          <span className="plan-option-features">
-                            {featureNames.join(' · ')}
-                          </span>
-                        ) : null}
-                      </button>
-                    )
-                  })}
                 </div>
               ) : null}
             </section>
@@ -704,7 +840,43 @@ function TenantOnboardingForm() {
               </button>
             </div>
           </form>
-        )}
+
+        {isSuccessModalOpen && submittedSummary ? (
+          <div
+            className="onboarding-modal-backdrop"
+            role="presentation"
+            onClick={handleCloseSuccessModal}
+          >
+            <div
+              className="onboarding-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={successTitleId}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <p id={successTitleId} className="onboarding-success-title">
+                Request received
+              </p>
+              <p>
+                Thanks — we recorded <strong>{submittedSummary.tenantName}</strong>
+                {submittedSummary.branchCount > 0
+                  ? ` with ${submittedSummary.branchCount} branch${
+                      submittedSummary.branchCount === 1 ? '' : 'es'
+                    }`
+                  : ''}
+                . Our team will follow up at {submittedSummary.email}.
+              </p>
+              <button
+                type="button"
+                className="onboarding-submit"
+                ref={closeModalRef}
+                onClick={handleCloseSuccessModal}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   )

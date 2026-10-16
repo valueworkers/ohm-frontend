@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Hero from '../components/Hero'
 import AboutSection from '../components/AboutSection'
-import TenantsList from '../components/TenantsList'
 import TenantOnboardingForm from '../components/TenantOnboardingForm'
 
 function HomePage() {
@@ -23,7 +22,6 @@ function HomePage() {
     <>
       <Hero />
       <AboutSection />
-      <TenantsList />
       <TenantOnboardingForm />
     </>
   )

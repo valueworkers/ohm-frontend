@@ -1,0 +1,95 @@
+.pricing-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-page-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 3.25rem 1.25rem 2.75rem;
+  background:
+    radial-gradient(ellipse 80% 70% at 12% 10%, rgba(126, 181, 177, 0.35), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 80%, rgba(212, 87, 42, 0.12), transparent 50%),
+    linear-gradient(165deg, #0d3d3a 0%, #114d4a 48%, #1a5f5b 100%);
+  color: #fff;
+}
+
+.pricing-page-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+}
+
+.pricing-page-hero-inner {
+  position: relative;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  animation: rise-in 0.8s var(--ease-out) both;
+}
+
+.pricing-page-eyebrow {
+  margin: 0 0 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f0c4b4;
+}
+
+.pricing-page-title {
+  margin: 0 0 0.75rem;
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 5.5vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.pricing-page-lead {
+  margin: 0 0 1.5rem;
+  max-width: 42ch;
+  font-size: 1.15rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.pricing-page-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 1.125rem;
+  text-decoration: none;
+  transition:
+    transform 0.25s var(--ease-out),
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.pricing-page-cta:hover {
+  background: #f2f8f7;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 900px) {
+  .pricing-page-hero {
+    padding: 4.5rem 1.5rem 3.5rem;
+  }
+}

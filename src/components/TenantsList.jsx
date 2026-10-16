@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { isAuthenticated } from '../api/auth'
+import { Link } from 'react-router-dom'
 import { listTenants } from '../api/tenants'
 import { useReveal } from '../hooks/useReveal'
 import './TenantsList.css'
@@ -12,23 +11,11 @@ function formatStatus(status) {
 
 function TenantsList() {
   const sectionRef = useReveal()
-  const location = useLocation()
   const [tenants, setTenants] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
-  const [hasAuth, setHasAuth] = useState(() => isAuthenticated())
 
   useEffect(() => {
-    const authed = isAuthenticated()
-    setHasAuth(authed)
-
-    if (!authed) {
-      setTenants([])
-      setErrorMessage('')
-      setIsLoading(false)
-      return undefined
-    }
-
     let cancelled = false
     setIsLoading(true)
     setErrorMessage('')
@@ -50,7 +37,7 @@ function TenantsList() {
     return () => {
       cancelled = true
     }
-  }, [location.pathname, location.key])
+  }, [])
 
   return (
     <section
@@ -66,34 +53,25 @@ function TenantsList() {
           Browse care providers on O-HM, including domains and contact details.
         </p>
 
-        {!hasAuth ? (
-          <div className="tenants-empty" role="status">
-            <p>Sign in to view care providers on O-HM.</p>
-            <Link to="/login" className="tenants-login-link">
-              Go to login
-            </Link>
-          </div>
-        ) : null}
-
-        {hasAuth && isLoading ? (
+        {isLoading ? (
           <p className="tenants-state" role="status">
             Loading care providers…
           </p>
         ) : null}
 
-        {hasAuth && errorMessage ? (
+        {errorMessage ? (
           <p className="tenants-state is-error" role="alert">
             {errorMessage}
           </p>
         ) : null}
 
-        {hasAuth && !isLoading && !errorMessage && tenants.length === 0 ? (
+        {!isLoading && !errorMessage && tenants.length === 0 ? (
           <p className="tenants-state" role="status">
             No care providers found yet.
           </p>
         ) : null}
 
-        {hasAuth && tenants.length > 0 ? (
+        {tenants.length > 0 ? (
           <ul className="tenants-grid">
             {tenants.map((tenant, index) => {
               const primaryDomain =

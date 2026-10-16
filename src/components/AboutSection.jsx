@@ -3,7 +3,7 @@ import './AboutSection.css'
 
 const POINTS = [
   {
-    title: 'For families',
+    title: 'For individuals/families',
     text: 'Search and compare assisted living, memory care, home care, and more in one directory.',
   },
   {
@@ -11,8 +11,8 @@ const POINTS = [
     text: 'Join as a tenant, claim your profile, and optionally launch a site on your own O-HM subdomain.',
   },
   {
-    title: 'For operators',
-    text: 'Add an ops admin when you need a separate contact for day-to-day platform support.',
+    title: 'For employees/affiliates',
+    text: 'Invite co-owners (up to three) when you need shared access for day-to-day platform support.',
   },
 ]
 
@@ -28,11 +28,11 @@ function AboutSection() {
     >
       <div className="about-inner">
         <p className="section-eyebrow">About O-HM</p>
-        <h2 id="about-heading">Built for senior care networks</h2>
+        <h2 id="about-heading">Built for care networks</h2>
         <p className="about-lead">
-          O-HM is an aggregator for senior care providers. Families get a clearer path
-          to compare options; providers get discovery, referrals, and a branded web
-          presence under one roof.
+          O-HM is a unified platform for senior care, pharma care, and more.
+          Families get a clearer path to compare options; providers get discovery,
+          referrals, and a branded web presence under one roof.
         </p>
         <ul className="about-points">
           {POINTS.map((point, index) => (
