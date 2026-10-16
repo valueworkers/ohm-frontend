@@ -56,9 +56,29 @@ function shortenMessage(raw, maxLength = 48) {
   return `${text.slice(0, maxLength - 1).trim()}…`
 }
 
+function formatThrottleMessage(raw) {
+  const text = String(raw || '')
+  const match = text.match(/available in\s+(\d+)\s+seconds?/i)
+  if (!match && !/throttl/i.test(text)) return ''
+
+  const seconds = match ? Number(match[1]) : 0
+  if (!seconds || Number.isNaN(seconds)) {
+    return 'Too many requests. Please try again later.'
+  }
+
+  const minutes = Math.max(1, Math.ceil(seconds / 60))
+  return `Too many requests. Please try again in about ${minutes} minute${minutes === 1 ? '' : 's'}.`
+}
+
 function getErrorMessage(data, status, path = '') {
   const authEndpoint = isAuthEndpoint(path)
-  const short = shortenMessage(pickRawMessage(data))
+  const raw = pickRawMessage(data)
+  const throttleMessage = formatThrottleMessage(raw)
+  if (status === 429 || throttleMessage) {
+    return throttleMessage || 'Too many requests. Please try again later.'
+  }
+
+  const short = shortenMessage(raw)
 
   if (status === 400) return short || 'Invalid request. Check your details.'
   if (status === 401) {
@@ -114,10 +134,19 @@ export async function apiRequest(path, options = {}) {
   const { auth = false, headers: customHeaders, ...rest } = options
   const cleanPath = path.replace(/^\//, '')
   const url = `${getBaseUrl()}${cleanPath}`
+  const isFormData =
+    typeof FormData !== 'undefined' && rest.body instanceof FormData
   const headers = {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
     ...customHeaders,
+  }
+
+  // Let the browser set multipart boundary for FormData
+  if (!isFormData && headers['Content-Type'] == null) {
+    headers['Content-Type'] = 'application/json'
+  }
+  if (isFormData) {
+    delete headers['Content-Type']
   }
 
   if (auth) {

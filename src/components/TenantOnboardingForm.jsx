@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { checkSlugAvailability, submitOnboardingRequest } from '../api/onboarding'
+import { fetchPlans } from '../api/plans'
 import { useReveal } from '../hooks/useReveal'
+import { compressImage } from '../utils/compressImage'
 import './TenantOnboardingForm.css'
 
 const EMPTY_BRANCH = { name: '', address: '' }
@@ -19,6 +21,7 @@ const INITIAL_FORM = {
   customDomain: '',
   slug: '',
   customizeWebsite: 'no',
+  requestedPlan: null,
 }
 
 function YesNo({ name, legend, value, onYes, onNo }) {
@@ -62,10 +65,45 @@ function TenantOnboardingForm() {
     state: 'idle',
     message: '',
   })
+  const [plans, setPlans] = useState([])
+  const [plansState, setPlansState] = useState('loading')
+  const [plansError, setPlansError] = useState('')
 
   function updateField(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadPlans() {
+      setPlansState('loading')
+      setPlansError('')
+      try {
+        const list = await fetchPlans()
+        if (cancelled) return
+        setPlans(list)
+        setPlansState(list.length ? 'ready' : 'empty')
+        if (list.length === 1) {
+          setForm((prev) =>
+            prev.requestedPlan == null
+              ? { ...prev, requestedPlan: list[0].id }
+              : prev
+          )
+        }
+      } catch (error) {
+        if (cancelled) return
+        setPlans([])
+        setPlansState('error')
+        setPlansError(error.message || 'Could not load plans.')
+      }
+    }
+
+    loadPlans()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const cleanSlug = form.slug
@@ -127,18 +165,34 @@ function TenantOnboardingForm() {
     }))
   }
 
-  function handleLogoChange(event) {
-    const file = event.target.files?.[0] ?? null
-    updateField('tenantLogo', file)
+  async function handleLogoChange(event) {
+    const input = event.target
+    const file = input.files?.[0] ?? null
 
     if (logoPreview) {
       URL.revokeObjectURL(logoPreview)
+      setLogoPreview('')
     }
 
-    if (file) {
-      setLogoPreview(URL.createObjectURL(file))
-    } else {
+    if (!file) {
+      updateField('tenantLogo', null)
+      return
+    }
+
+    try {
+      const compressed = await compressImage(file, {
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.8,
+        maxBytes: 200 * 1024,
+      })
+      updateField('tenantLogo', compressed)
+      setLogoPreview(URL.createObjectURL(compressed))
+    } catch {
+      updateField('tenantLogo', null)
       setLogoPreview('')
+      setErrorMessage('Could not process logo. Try another image.')
+      input.value = ''
     }
   }
 
@@ -192,6 +246,10 @@ function TenantOnboardingForm() {
     }
     if (slugStatus.state !== 'available') {
       setErrorMessage('Choose an available subdomain before submitting.')
+      return
+    }
+    if (form.requestedPlan == null) {
+      setErrorMessage('Select a plan to continue.')
       return
     }
 
@@ -547,6 +605,83 @@ function TenantOnboardingForm() {
                   ) : null}
                 </div>
               </div>
+            </section>
+
+            <section className="form-section" aria-labelledby="plan-heading">
+              <div className="form-section-head">
+                <span className="form-step" aria-hidden="true">
+                  4
+                </span>
+                <div>
+                  <h3 id="plan-heading">Choose a plan</h3>
+                  <p>Select the plan for this tenant. Required before submit.</p>
+                </div>
+              </div>
+
+              {plansState === 'loading' ? (
+                <p className="plans-status">Loading plans…</p>
+              ) : null}
+
+              {plansState === 'error' ? (
+                <p className="plans-status is-error" role="alert">
+                  {plansError}
+                </p>
+              ) : null}
+
+              {plansState === 'empty' ? (
+                <p className="plans-status">No plans available right now.</p>
+              ) : null}
+
+              {plansState === 'ready' ? (
+                <div className="plan-options" role="radiogroup" aria-label="Plans">
+                  {plans.map((plan) => {
+                    const isSelected = form.requestedPlan === plan.id
+                    const featureNames = Array.isArray(plan.features)
+                      ? plan.features
+                          .map((feature) => feature?.name)
+                          .filter(Boolean)
+                          .slice(0, 3)
+                      : []
+
+                    return (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        className={`plan-option${isSelected ? ' is-selected' : ''}`}
+                        onClick={() => updateField('requestedPlan', plan.id)}
+                      >
+                        <span className="plan-option-top">
+                          <span className="plan-option-name">{plan.name}</span>
+                          {isSelected ? (
+                            <span className="plan-option-badge">Selected</span>
+                          ) : null}
+                        </span>
+                        {plan.description ? (
+                          <span className="plan-option-desc">{plan.description}</span>
+                        ) : null}
+                        <span className="plan-option-meta">
+                          {plan.max_employees != null
+                            ? `Up to ${plan.max_employees} employees`
+                            : null}
+                          {plan.max_employees != null && plan.max_branches != null
+                            ? ' · '
+                            : null}
+                          {plan.max_branches != null
+                            ? `${plan.max_branches} branches`
+                            : null}
+                        </span>
+                        {featureNames.length ? (
+                          <span className="plan-option-features">
+                            {featureNames.join(' · ')}
+                          </span>
+                        ) : null}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
             </section>
 
             <div className="form-actions">

@@ -436,6 +436,86 @@
   box-shadow: 0 10px 22px rgba(17, 77, 74, 0.28);
 }
 
+.plans-status {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-ink-muted);
+}
+
+.plans-status.is-error {
+  color: #8a1f11;
+  font-weight: 600;
+}
+
+.plan-options {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+.plan-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-soft);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.plan-option:hover {
+  border-color: var(--color-primary-mid);
+  background: #eaf4f3;
+}
+
+.plan-option.is-selected {
+  border-color: var(--color-primary);
+  background: #eaf4f3;
+  box-shadow: 0 0 0 3px rgba(126, 181, 177, 0.35);
+}
+
+.plan-option-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.plan-option-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-primary);
+}
+
+.plan-option-badge {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.plan-option-desc,
+.plan-option-meta,
+.plan-option-features {
+  font-size: 0.9rem;
+  color: var(--color-ink-muted);
+}
+
+.plan-option-features {
+  margin-top: 0.15rem;
+}
+
 .onboarding-success {
   padding: 1.35rem 1.25rem;
   background: #fff;
@@ -479,6 +559,10 @@
 
   .form-row-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .plan-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .form-actions {

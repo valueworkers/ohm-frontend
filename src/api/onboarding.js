@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import { compressImage } from '../utils/compressImage'
 
 export function buildOnboardingPayload(form) {
   const organizationName = form.tenantName.trim()
@@ -41,14 +42,45 @@ export function buildOnboardingPayload(form) {
     custom_domain:
       form.hasDomain === 'yes' ? form.customDomain.trim() : '',
     wants_custom_website: form.customizeWebsite === 'yes',
-    requested_plan: null,
+    requested_plan: form.requestedPlan ?? null,
   }
+}
+
+export async function buildOnboardingFormData(form) {
+  const payload = buildOnboardingPayload(form)
+  const body = new FormData()
+
+  body.append('organization_name', payload.organization_name)
+  body.append('email', payload.email)
+  body.append('contact_phone', payload.contact_phone)
+  body.append('address', payload.address)
+  body.append('branches', JSON.stringify(payload.branches))
+  body.append('ops_admin_email', payload.ops_admin_email)
+  body.append('slug', payload.slug)
+  body.append('custom_domain', payload.custom_domain)
+  body.append('wants_custom_website', String(payload.wants_custom_website))
+
+  if (payload.requested_plan != null) {
+    body.append('requested_plan', String(payload.requested_plan))
+  }
+
+  if (form.tenantLogo instanceof File) {
+    const logo = await compressImage(form.tenantLogo, {
+      maxWidth: 800,
+      maxHeight: 800,
+      quality: 0.8,
+      maxBytes: 200 * 1024,
+    })
+    body.append('logo', logo)
+  }
+
+  return body
 }
 
 export async function submitOnboardingRequest(form) {
   return apiRequest('onboarding/requests/', {
     method: 'POST',
-    body: JSON.stringify(buildOnboardingPayload(form)),
+    body: await buildOnboardingFormData(form),
   })
 }
 
