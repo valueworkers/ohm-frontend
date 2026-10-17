@@ -266,11 +266,95 @@
   min-width: 0;
 }
 
+.required-star {
+  margin-left: 0.2rem;
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.branches-accordion {
+  margin-top: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.branches-accordion-trigger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.85rem;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: var(--color-surface-soft);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.branches-accordion-trigger:hover {
+  background: #eaf4f3;
+}
+
+.branches-accordion.is-open .branches-accordion-trigger {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.branches-accordion-title {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.branches-accordion-meta {
+  margin-right: auto;
+  font-size: 0.9rem;
+  color: var(--color-ink-muted);
+}
+
+.branches-accordion-chevron {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  transform: rotate(45deg);
+  transition: transform 0.2s var(--ease-out);
+  flex-shrink: 0;
+}
+
+.branches-accordion.is-open .branches-accordion-chevron {
+  transform: rotate(-135deg);
+}
+
+.setup-options-row {
+  align-items: start;
+}
+
+.setup-options-row .yes-no {
+  height: auto;
+}
+
+.setup-options-row .yes-no legend {
+  min-height: 0;
+}
+
+.setup-options-row .segment {
+  margin-top: 0.4rem;
+}
+
 .branches-fields,
 .co-owners-fields,
 .conditional-panel {
   margin-top: 0.9rem;
   animation: rise-in 0.35s var(--ease-out);
+}
+
+.branches-accordion .branches-fields {
+  margin-top: 0;
+  padding: 0.9rem 1rem 1rem;
 }
 
 .co-owners-fields {
@@ -279,11 +363,23 @@
   gap: 0.75rem;
 }
 
+.co-owners-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
 .co-owner-row {
   display: grid;
   gap: 0.5rem;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
+}
+
+@media (min-width: 700px) {
+  .co-owners-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .branches-fields {

@@ -4,7 +4,24 @@ import { useReveal } from '../hooks/useReveal'
 import { compressImage } from '../utils/compressImage'
 import './TenantOnboardingForm.css'
 
-const EMPTY_BRANCH = { name: '', address: '' }
+const EMPTY_BRANCH = {
+  name: '',
+  addressLine1: '',
+  addressLine2: '',
+  locality: '',
+  city: '',
+  pincode: '',
+}
+
+function isBranchComplete(branch) {
+  return (
+    branch.name.trim() &&
+    branch.addressLine1.trim() &&
+    branch.locality.trim() &&
+    branch.city.trim() &&
+    /^\d{6}$/.test(branch.pincode.trim())
+  )
+}
 
 const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/
 
@@ -16,14 +33,8 @@ const INITIAL_FORM = {
   email: '',
   phone: '',
   gst: '',
-  addressLine1: '',
-  addressLine2: '',
-  locality: '',
-  city: '',
-  pincode: '',
   wantsCoOwners: 'no',
   coOwnerEmails: [''],
-  hasBranches: 'no',
   branches: [{ ...EMPTY_BRANCH }],
   hasDomain: 'no',
   customDomain: '',
@@ -75,6 +86,7 @@ function TenantOnboardingForm() {
     state: 'idle',
     message: '',
   })
+  const [areBranchesOpen, setAreBranchesOpen] = useState(false)
 
   function updateField(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }))
@@ -142,10 +154,13 @@ function TenantOnboardingForm() {
   }
 
   function removeBranch(index) {
-    setForm((prev) => ({
-      ...prev,
-      branches: prev.branches.filter((_, i) => i !== index),
-    }))
+    setForm((prev) => {
+      if (prev.branches.length <= 1) return prev
+      return {
+        ...prev,
+        branches: prev.branches.filter((_, i) => i !== index),
+      }
+    })
   }
 
   function updateCoOwnerEmail(index, value) {
@@ -231,22 +246,6 @@ function TenantOnboardingForm() {
       setErrorMessage('Enter a 10-digit phone number.')
       return
     }
-    if (!form.addressLine1.trim()) {
-      setErrorMessage('Address line 1 is required.')
-      return
-    }
-    if (!form.locality.trim()) {
-      setErrorMessage('Locality is required.')
-      return
-    }
-    if (!form.city.trim()) {
-      setErrorMessage('City is required.')
-      return
-    }
-    if (!/^\d{6}$/.test(form.pincode.trim())) {
-      setErrorMessage('Enter a valid 6-digit pincode.')
-      return
-    }
 
     const gst = form.gst.trim().toUpperCase()
     if (gst && !GSTIN_PATTERN.test(gst)) {
@@ -254,14 +253,29 @@ function TenantOnboardingForm() {
       return
     }
 
-    if (form.hasBranches === 'yes') {
-      const hasValidBranch = form.branches.some(
-        (branch) => branch.name.trim() && branch.address.trim()
+    if (!form.branches.some(isBranchComplete)) {
+      setAreBranchesOpen(true)
+      setErrorMessage(
+        'At least one service location is required (branch name, address line 1, locality, city, and 6-digit pincode).'
       )
-      if (!hasValidBranch) {
-        setErrorMessage('Add at least one branch with name and address.')
-        return
-      }
+      return
+    }
+    const incompleteBranch = form.branches.find(
+      (branch) =>
+        (branch.name.trim() ||
+          branch.addressLine1.trim() ||
+          branch.addressLine2.trim() ||
+          branch.locality.trim() ||
+          branch.city.trim() ||
+          branch.pincode.trim()) &&
+        !isBranchComplete(branch)
+    )
+    if (incompleteBranch) {
+      setAreBranchesOpen(true)
+      setErrorMessage(
+        'Complete each service location with branch name, address line 1, locality, city, and 6-digit pincode.'
+      )
+      return
     }
 
     if (form.wantsCoOwners === 'yes') {
@@ -319,14 +333,10 @@ function TenantOnboardingForm() {
 
     try {
       await submitOnboardingRequest({ ...form, gst })
-      const branchCount =
-        form.hasBranches === 'yes'
-          ? form.branches.filter((branch) => branch.name.trim()).length
-          : 0
       setSubmittedSummary({
         tenantName: form.tenantName.trim(),
         email: form.email.trim(),
-        branchCount,
+        branchCount: form.branches.filter((branch) => branch.name.trim()).length,
       })
       setIsSuccessModalOpen(true)
     } catch (error) {
@@ -346,6 +356,7 @@ function TenantOnboardingForm() {
     setSlugStatus({ state: 'idle', message: '' })
     setSubmittedSummary(null)
     setIsSuccessModalOpen(false)
+    setAreBranchesOpen(false)
   }
 
   useEffect(() => {
@@ -467,9 +478,7 @@ function TenantOnboardingForm() {
                     }}
                   />
                 </div>
-              </div>
 
-              <div className="form-row form-row-2">
                 <div className="form-field">
                   <span className="field-label" id="logo-label">
                     Organization logo
@@ -497,89 +506,6 @@ function TenantOnboardingForm() {
                     />
                   </label>
                 </div>
-
-                <div className="form-field">
-                  <label htmlFor="addressLine1">Address line 1</label>
-                  <input
-                    id="addressLine1"
-                    name="addressLine1"
-                    type="text"
-                    required
-                    autoComplete="address-line1"
-                    value={form.addressLine1}
-                    onChange={(event) =>
-                      updateField('addressLine1', event.target.value)
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-field">
-                  <label htmlFor="addressLine2">Address line 2</label>
-                  <input
-                    id="addressLine2"
-                    name="addressLine2"
-                    type="text"
-                    autoComplete="address-line2"
-                    value={form.addressLine2}
-                    onChange={(event) =>
-                      updateField('addressLine2', event.target.value)
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="form-row form-row-3">
-                <div className="form-field">
-                  <label htmlFor="locality">Locality</label>
-                  <input
-                    id="locality"
-                    name="locality"
-                    type="text"
-                    required
-                    autoComplete="address-level3"
-                    value={form.locality}
-                    onChange={(event) =>
-                      updateField('locality', event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="city">City</label>
-                  <input
-                    id="city"
-                    name="city"
-                    type="text"
-                    required
-                    autoComplete="address-level2"
-                    value={form.city}
-                    onChange={(event) => updateField('city', event.target.value)}
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="pincode">Pincode</label>
-                  <input
-                    id="pincode"
-                    name="pincode"
-                    type="text"
-                    required
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                    maxLength={6}
-                    pattern="[0-9]{6}"
-                    title="Enter a 6-digit pincode"
-                    value={form.pincode}
-                    onChange={(event) => {
-                      const digits = event.target.value
-                        .replace(/\D/g, '')
-                        .slice(0, 6)
-                      updateField('pincode', digits)
-                    }}
-                  />
-                </div>
               </div>
             </section>
 
@@ -594,21 +520,7 @@ function TenantOnboardingForm() {
                 </div>
               </div>
 
-              <div className="form-row form-row-3">
-                <YesNo
-                  name="hasBranches"
-                  legend="Do you have multiple service locations?"
-                  value={form.hasBranches}
-                  onYes={(event) => updateField('hasBranches', event.target.value)}
-                  onNo={() => {
-                    setForm((prev) => ({
-                      ...prev,
-                      hasBranches: 'no',
-                      branches: [{ ...EMPTY_BRANCH }],
-                    }))
-                  }}
-                />
-
+              <div className="form-row form-row-2 setup-options-row">
                 <YesNo
                   name="wantsCoOwners"
                   legend="Do you need co-owners? (up to 3)"
@@ -632,93 +544,42 @@ function TenantOnboardingForm() {
                 />
               </div>
 
-              {form.hasBranches === 'yes' ? (
-                <div className="branches-fields">
-                  <p className="branches-hint">Add each branch under this organization.</p>
-                  {form.branches.map((branch, index) => (
-                    <div key={index} className="branch-block">
-                      <div className="branch-block-header">
-                        <span>Branch {index + 1}</span>
-                        {form.branches.length > 1 ? (
-                          <button
-                            type="button"
-                            className="branch-remove"
-                            onClick={() => removeBranch(index)}
-                          >
-                            Remove
-                          </button>
-                        ) : null}
-                      </div>
-                      <div className="form-row form-row-2">
-                        <div className="form-field">
-                          <label htmlFor={`branch-name-${index}`}>Branch name</label>
-                          <input
-                            id={`branch-name-${index}`}
-                            name={`branchName-${index}`}
-                            type="text"
-                            required
-                            value={branch.name}
-                            onChange={(event) =>
-                              updateBranch(index, 'name', event.target.value)
-                            }
-                          />
-                        </div>
-                        <div className="form-field">
-                          <label htmlFor={`branch-address-${index}`}>Branch address</label>
-                          <input
-                            id={`branch-address-${index}`}
-                            name={`branchAddress-${index}`}
-                            type="text"
-                            required
-                            value={branch.address}
-                            onChange={(event) =>
-                              updateBranch(index, 'address', event.target.value)
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <button type="button" className="branch-add" onClick={addBranch}>
-                    Add another branch
-                  </button>
-                </div>
-              ) : null}
-
               {form.wantsCoOwners === 'yes' ? (
                 <div className="co-owners-fields conditional-panel">
                   <p className="branches-hint">
                     Add up to {MAX_CO_OWNERS} co-owner emails for this organization.
                   </p>
-                  {form.coOwnerEmails.map((email, index) => (
-                    <div key={index} className="co-owner-row">
-                      <div className="form-field">
-                        <label htmlFor={`co-owner-email-${index}`}>
-                          Co-owner email {index + 1}
-                        </label>
-                        <input
-                          id={`co-owner-email-${index}`}
-                          name={`coOwnerEmail-${index}`}
-                          type="email"
-                          required
-                          autoComplete="email"
-                          value={email}
-                          onChange={(event) =>
-                            updateCoOwnerEmail(index, event.target.value)
-                          }
-                        />
+                  <div className="co-owners-grid">
+                    {form.coOwnerEmails.map((email, index) => (
+                      <div key={index} className="co-owner-row">
+                        <div className="form-field">
+                          <label htmlFor={`co-owner-email-${index}`}>
+                            Co-owner email {index + 1}
+                          </label>
+                          <input
+                            id={`co-owner-email-${index}`}
+                            name={`coOwnerEmail-${index}`}
+                            type="email"
+                            required
+                            autoComplete="email"
+                            value={email}
+                            onChange={(event) =>
+                              updateCoOwnerEmail(index, event.target.value)
+                            }
+                          />
+                        </div>
+                        {form.coOwnerEmails.length > 1 ? (
+                          <button
+                            type="button"
+                            className="branch-remove"
+                            onClick={() => removeCoOwnerEmail(index)}
+                          >
+                            Remove
+                          </button>
+                        ) : null}
                       </div>
-                      {form.coOwnerEmails.length > 1 ? (
-                        <button
-                          type="button"
-                          className="branch-remove"
-                          onClick={() => removeCoOwnerEmail(index)}
-                        >
-                          Remove
-                        </button>
-                      ) : null}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                   {form.coOwnerEmails.length < MAX_CO_OWNERS ? (
                     <button
                       type="button"
@@ -730,6 +591,189 @@ function TenantOnboardingForm() {
                   ) : null}
                 </div>
               ) : null}
+
+              <div className={`branches-accordion${areBranchesOpen ? ' is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="branches-accordion-trigger"
+                  aria-expanded={areBranchesOpen}
+                  onClick={() => setAreBranchesOpen((open) => !open)}
+                >
+                  <span className="branches-accordion-title">
+                    Service locations
+                    <span className="required-star" aria-hidden="true">
+                      *
+                    </span>
+                  </span>
+                  <span className="branches-accordion-meta">
+                    {form.branches.filter(isBranchComplete).length > 0
+                      ? `${form.branches.filter(isBranchComplete).length} added`
+                      : 'Required · click to add'}
+                  </span>
+                  <span className="branches-accordion-chevron" aria-hidden="true" />
+                </button>
+
+                {areBranchesOpen ? (
+                  <div className="branches-fields">
+                    <p className="branches-hint">
+                      At least one service location is required. Add more if needed.
+                    </p>
+                    {form.branches.map((branch, index) => (
+                      <div key={index} className="branch-block">
+                        <div className="branch-block-header">
+                          <span>
+                            Location {index + 1}
+                            {index === 0 ? (
+                              <span className="required-star" aria-hidden="true">
+                                *
+                              </span>
+                            ) : null}
+                          </span>
+                          {form.branches.length > 1 ? (
+                            <button
+                              type="button"
+                              className="branch-remove"
+                              onClick={() => removeBranch(index)}
+                            >
+                              Remove
+                            </button>
+                          ) : null}
+                        </div>
+                        <div className="form-row">
+                          <div className="form-field">
+                            <label htmlFor={`branch-name-${index}`}>
+                              Branch name
+                              <span className="required-star" aria-hidden="true">
+                                *
+                              </span>
+                            </label>
+                            <input
+                              id={`branch-name-${index}`}
+                              name={`branchName-${index}`}
+                              type="text"
+                              required={areBranchesOpen}
+                              value={branch.name}
+                              onChange={(event) =>
+                                updateBranch(index, 'name', event.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="form-row form-row-2">
+                          <div className="form-field">
+                            <label htmlFor={`branch-address-line1-${index}`}>
+                              Address line 1
+                              <span className="required-star" aria-hidden="true">
+                                *
+                              </span>
+                            </label>
+                            <input
+                              id={`branch-address-line1-${index}`}
+                              name={`branchAddressLine1-${index}`}
+                              type="text"
+                              required={areBranchesOpen}
+                              autoComplete="address-line1"
+                              value={branch.addressLine1}
+                              onChange={(event) =>
+                                updateBranch(
+                                  index,
+                                  'addressLine1',
+                                  event.target.value
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="form-field">
+                            <label htmlFor={`branch-address-line2-${index}`}>
+                              Address line 2
+                            </label>
+                            <input
+                              id={`branch-address-line2-${index}`}
+                              name={`branchAddressLine2-${index}`}
+                              type="text"
+                              autoComplete="address-line2"
+                              value={branch.addressLine2}
+                              onChange={(event) =>
+                                updateBranch(
+                                  index,
+                                  'addressLine2',
+                                  event.target.value
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="form-row form-row-3">
+                          <div className="form-field">
+                            <label htmlFor={`branch-locality-${index}`}>
+                              Locality
+                              <span className="required-star" aria-hidden="true">
+                                *
+                              </span>
+                            </label>
+                            <input
+                              id={`branch-locality-${index}`}
+                              name={`branchLocality-${index}`}
+                              type="text"
+                              required={areBranchesOpen}
+                              value={branch.locality}
+                              onChange={(event) =>
+                                updateBranch(index, 'locality', event.target.value)
+                              }
+                            />
+                          </div>
+                          <div className="form-field">
+                            <label htmlFor={`branch-city-${index}`}>
+                              City
+                              <span className="required-star" aria-hidden="true">
+                                *
+                              </span>
+                            </label>
+                            <input
+                              id={`branch-city-${index}`}
+                              name={`branchCity-${index}`}
+                              type="text"
+                              required={areBranchesOpen}
+                              value={branch.city}
+                              onChange={(event) =>
+                                updateBranch(index, 'city', event.target.value)
+                              }
+                            />
+                          </div>
+                          <div className="form-field">
+                            <label htmlFor={`branch-pincode-${index}`}>
+                              Pincode
+                              <span className="required-star" aria-hidden="true">
+                                *
+                              </span>
+                            </label>
+                            <input
+                              id={`branch-pincode-${index}`}
+                              name={`branchPincode-${index}`}
+                              type="text"
+                              required={areBranchesOpen}
+                              inputMode="numeric"
+                              maxLength={6}
+                              pattern="[0-9]{6}"
+                              title="Enter a 6-digit pincode"
+                              value={branch.pincode}
+                              onChange={(event) => {
+                                const digits = event.target.value
+                                  .replace(/\D/g, '')
+                                  .slice(0, 6)
+                                updateBranch(index, 'pincode', digits)
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button type="button" className="branch-add" onClick={addBranch}>
+                      Add another location
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             </section>
 
             <section className="form-section" aria-labelledby="website-heading">

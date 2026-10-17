@@ -1,47 +1,57 @@
 import { apiRequest } from './client'
 import { compressImage } from '../utils/compressImage'
 
-function buildFullAddress(form) {
+function buildFullAddress(parts) {
   return [
-    form.addressLine1,
-    form.addressLine2,
-    form.locality,
-    form.city,
-    form.pincode,
+    parts.addressLine1,
+    parts.addressLine2,
+    parts.locality,
+    parts.city,
+    parts.pincode,
   ]
     .map((part) => String(part || '').trim())
     .filter(Boolean)
     .join(', ')
 }
 
+function mapBranch(branch) {
+  const addressLine1 = branch.addressLine1.trim()
+  const addressLine2 = branch.addressLine2.trim()
+  const locality = branch.locality.trim()
+  const city = branch.city.trim()
+  const pincode = branch.pincode.trim()
+
+  return {
+    name: branch.name.trim(),
+    address_line_1: addressLine1,
+    address_line_2: addressLine2,
+    locality,
+    city,
+    pincode,
+    address: buildFullAddress({
+      addressLine1,
+      addressLine2,
+      locality,
+      city,
+      pincode,
+    }),
+  }
+}
+
 export function buildOnboardingPayload(form) {
   const organizationName = form.tenantName.trim()
-  const addressLine1 = form.addressLine1.trim()
-  const addressLine2 = form.addressLine2.trim()
-  const locality = form.locality.trim()
-  const city = form.city.trim()
-  const pincode = form.pincode.trim()
-  const address = buildFullAddress(form)
 
-  let branches =
-    form.hasBranches === 'yes'
-      ? form.branches
-          .filter((branch) => branch.name.trim() || branch.address.trim())
-          .map((branch) => ({
-            name: branch.name.trim(),
-            address: branch.address.trim(),
-          }))
-      : []
-
-  // API requires branches (not null); use org as main branch when none are listed
-  if (branches.length === 0) {
-    branches = [
-      {
-        name: organizationName || 'Main',
-        address,
-      },
-    ]
-  }
+  const branches = form.branches
+    .filter(
+      (branch) =>
+        branch.name.trim() ||
+        branch.addressLine1.trim() ||
+        branch.addressLine2.trim() ||
+        branch.locality.trim() ||
+        branch.city.trim() ||
+        branch.pincode.trim()
+    )
+    .map(mapBranch)
 
   let slug = form.slug
     .trim()
@@ -64,12 +74,6 @@ export function buildOnboardingPayload(form) {
     gst_number: String(form.gst || '')
       .trim()
       .toUpperCase(),
-    address_line_1: addressLine1,
-    address_line_2: addressLine2,
-    locality,
-    city,
-    pincode,
-    address,
     branches,
     co_owner_emails:
       form.wantsCoOwners === 'yes'
@@ -95,12 +99,6 @@ export async function buildOnboardingFormData(form) {
   if (payload.gst_number) {
     body.append('gst_number', payload.gst_number)
   }
-  body.append('address_line_1', payload.address_line_1)
-  body.append('address_line_2', payload.address_line_2)
-  body.append('locality', payload.locality)
-  body.append('city', payload.city)
-  body.append('pincode', payload.pincode)
-  body.append('address', payload.address)
   body.append('branches', JSON.stringify(payload.branches))
   body.append('co_owner_emails', JSON.stringify(payload.co_owner_emails))
   body.append('slug', payload.slug)
@@ -121,7 +119,7 @@ export async function buildOnboardingFormData(form) {
 }
 
 export async function submitOnboardingRequest(form) {
-  return apiRequest('onboarding/requests/', {
+  return apiRequest('api/platform/onboarding/requests/', {
     method: 'POST',
     body: await buildOnboardingFormData(form),
   })
@@ -146,7 +144,7 @@ export async function checkSlugAvailability(slug) {
   }
 
   const data = await apiRequest(
-    `onboarding/check-slug/?slug=${encodeURIComponent(cleanSlug)}`
+    `api/platform/onboarding/check-slug/?slug=${encodeURIComponent(cleanSlug)}`
   )
 
   const available =
