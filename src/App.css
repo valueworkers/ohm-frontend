@@ -3,7 +3,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: clip;
+  overflow: visible;
   background: var(--color-surface);
 }
 
@@ -11,6 +11,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
 }
 
 .app::before,
@@ -44,5 +45,15 @@
 
 .app > * {
   position: relative;
+  z-index: 1;
+}
+
+/* Keep account dropdown above hero / page cards */
+.app > .navbar {
+  z-index: 2000;
+}
+
+.app > main,
+.app > footer {
   z-index: 1;
 }

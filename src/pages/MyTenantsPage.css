@@ -1,0 +1,327 @@
+.my-tenants {
+  flex: 1;
+  padding: 1.5rem 1.25rem 2.5rem;
+  background:
+    radial-gradient(ellipse at top right, rgba(126, 181, 177, 0.2), transparent 50%),
+    var(--color-surface);
+}
+
+.my-tenants-inner {
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.my-tenants-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.my-tenants .section-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.my-tenants-header h1 {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  color: var(--color-primary);
+}
+
+.my-tenants-lead {
+  margin: 0.35rem 0 0;
+  color: var(--color-ink-muted);
+  font-size: 0.95rem;
+}
+
+.my-tenants-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.my-tenants-actions a,
+.my-tenants-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.my-tenants-actions a:hover,
+.my-tenants-btn:hover:not(:disabled) {
+  background: var(--color-surface-soft);
+}
+
+.my-tenants-btn.is-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.my-tenants-btn.is-primary:hover:not(:disabled) {
+  background: var(--color-primary-mid);
+}
+
+.my-tenants-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.my-tenants-state {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-ink-muted);
+}
+
+.my-tenants-state.is-error {
+  color: #8a1f11;
+  background: #fdecea;
+  border-color: #f0c2bb;
+}
+
+.my-tenants-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.my-tenants-card {
+  padding: 1.15rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.my-tenants-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.my-tenants-identity {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.my-tenants-logo,
+.my-tenants-logo-fallback {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.my-tenants-logo {
+  object-fit: cover;
+}
+
+.my-tenants-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.my-tenants-card h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--color-primary);
+}
+
+.my-tenants-meta {
+  margin: 0.35rem 0 0;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.my-tenants-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+  margin: 1rem 0 0;
+}
+
+.my-tenants-summary dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.my-tenants-summary dd {
+  margin: 0.15rem 0 0;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+.my-tenants-owners {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.my-tenants-owners-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.my-tenants-owners ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+}
+
+.my-tenants-owners-link {
+  display: inline-block;
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary-mid);
+}
+
+.my-tenants-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.my-tenants-field-full {
+  grid-column: 1 / -1;
+}
+
+.my-tenants-field select {
+  min-height: 2.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+
+.my-tenants-logo-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.my-tenants-readonly-note {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+}
+
+@media (max-width: 640px) {
+  .my-tenants-summary,
+  .my-tenants-edit-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.my-tenants-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+}
+
+.my-tenants-edit {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.my-tenants-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.my-tenants-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.my-tenants-field input {
+  min-height: 2.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.my-tenants-field input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.my-tenants-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.my-tenants-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  background: var(--color-surface-soft);
+  color: var(--color-primary-mid);
+}
+
+.my-tenants-status.is-active {
+  background: #e7f6ef;
+  color: #1f6a4a;
+}
+
+.my-tenants-status.is-inactive,
+.my-tenants-status.is-pending,
+.my-tenants-status.is-provisioning {
+  background: #fff4e8;
+  color: #a85a1a;
+}

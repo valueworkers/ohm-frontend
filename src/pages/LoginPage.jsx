@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
+  completeOwnerLogin,
+  getAuthSession,
   isAuthenticated,
   loginWithOtp,
   loginWithPassword,
@@ -11,14 +13,19 @@ import {
 } from '../api/auth'
 import './LoginPage.css'
 
+async function goAfterLogin(navigate, sessionOrPayload) {
+  const result = await completeOwnerLogin(sessionOrPayload)
+  if (result.redirected) return
+  navigate(result.path || '/my-tenants', { replace: true })
+}
+
 function LoginPage() {
   const navigate = useNavigate()
   const firstFieldRef = useRef(null)
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      navigate('/', { replace: true })
-    }
+    if (!isAuthenticated()) return
+    goAfterLogin(navigate, getAuthSession())
   }, [navigate])
 
   const [method, setMethod] = useState('password')
@@ -49,9 +56,9 @@ function LoginPage() {
         username: passwordForm.email.trim(),
         password: passwordForm.password,
       })
-      saveAuthSession(result)
+      const session = saveAuthSession(result)
       setStatusMessage('Signed in successfully.')
-      navigate('/', { replace: true })
+      await goAfterLogin(navigate, session)
     } catch (error) {
       setIsError(true)
       setStatusMessage(error.message || 'Login failed. Please try again.')
@@ -102,9 +109,9 @@ function LoginPage() {
 
     try {
       const result = await loginWithOtp({ username, otp })
-      saveAuthSession(result)
+      const session = saveAuthSession(result)
       setStatusMessage('Signed in successfully.')
-      navigate('/', { replace: true })
+      await goAfterLogin(navigate, session)
     } catch (error) {
       setIsError(true)
       setStatusMessage(error.message || 'OTP login failed. Please try again.')

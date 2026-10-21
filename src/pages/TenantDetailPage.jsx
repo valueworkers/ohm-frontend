@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getTenant } from '../api/tenants'
+import { buildTenantBasePath } from '../template/tenantContext'
 import './TenantDetailPage.css'
 
 function formatStatus(status) {
@@ -51,6 +52,8 @@ function TenantDetailPage() {
     (tenant?.schema_name ? `${tenant.schema_name}.o-hm.com` : '—')
 
   const branches = tenant?.branches || tenant?.locations || []
+  const tenantSlug = tenant?.slug || tenant?.schema_name || null
+  const templatePath = buildTenantBasePath(tenantSlug, tenant?.id)
 
   return (
     <section className="tenant-detail" aria-labelledby="tenant-detail-title">
@@ -92,9 +95,16 @@ function TenantDetailPage() {
                   <p className="tenant-detail-domain">{primaryDomain}</p>
                 </div>
               </div>
-              <span className={`tenant-status is-${tenant.status || 'unknown'}`}>
-                {formatStatus(tenant.status)}
-              </span>
+              <div className="tenant-detail-actions">
+                <span className={`tenant-status is-${tenant.status || 'unknown'}`}>
+                  {formatStatus(tenant.status)}
+                </span>
+                {templatePath ? (
+                  <a className="tenant-detail-open" href={`${templatePath}/`}>
+                    Open tenant site
+                  </a>
+                ) : null}
+              </div>
             </header>
 
             <dl className="tenant-detail-grid">

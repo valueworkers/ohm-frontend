@@ -15,6 +15,8 @@ const FIELD_LABELS = {
   address: 'Address',
   address_line_1: 'Address line 1',
   address_line_2: 'Address line 2',
+  line1: 'Address line 1',
+  line2: 'Address line 2',
   locality: 'Locality',
   city: 'City',
   pincode: 'Pincode',
@@ -22,6 +24,7 @@ const FIELD_LABELS = {
   custom_domain: 'Domain',
   co_owner_emails: 'Co-owner emails',
   ops_admin_email: 'Ops admin email',
+  requested_plan: 'Plan',
 }
 
 function pickRawMessage(data) {

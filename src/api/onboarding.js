@@ -1,41 +1,28 @@
 import { apiRequest } from './client'
 import { compressImage } from '../utils/compressImage'
 
-function buildFullAddress(parts) {
-  return [
-    parts.addressLine1,
-    parts.addressLine2,
-    parts.locality,
-    parts.city,
-    parts.pincode,
-  ]
-    .map((part) => String(part || '').trim())
-    .filter(Boolean)
-    .join(', ')
+function mapBranch(branch) {
+  return {
+    name: String(branch.name || '').trim(),
+    line1: String(branch.addressLine1 || '').trim(),
+    line2: String(branch.addressLine2 || '').trim(),
+    locality: String(branch.locality || '').trim(),
+    city: String(branch.city || '').trim(),
+    pincode: String(branch.pincode || '').trim(),
+  }
 }
 
-function mapBranch(branch) {
-  const addressLine1 = branch.addressLine1.trim()
-  const addressLine2 = branch.addressLine2.trim()
-  const locality = branch.locality.trim()
-  const city = branch.city.trim()
-  const pincode = branch.pincode.trim()
+function buildCoOwnerEmails(form) {
+  if (form.wantsCoOwners !== 'yes') return null
 
-  return {
-    name: branch.name.trim(),
-    address_line_1: addressLine1,
-    address_line_2: addressLine2,
-    locality,
-    city,
-    pincode,
-    address: buildFullAddress({
-      addressLine1,
-      addressLine2,
-      locality,
-      city,
-      pincode,
-    }),
-  }
+  const emails = (form.coOwnerEmails || [])
+    .map((email) => String(email || '').trim())
+    .slice(0, 3)
+
+  // Keep empty slots as " " so the API receives e.g. ["test@test.com", " "]
+  const normalized = emails.map((email) => (email ? email : ' '))
+  const hasAny = normalized.some((email) => email.trim())
+  return hasAny ? normalized : null
 }
 
 export function buildOnboardingPayload(form) {
@@ -67,25 +54,23 @@ export function buildOnboardingPayload(form) {
       .slice(0, 48)
   }
 
+  const coOwnerEmails = buildCoOwnerEmails(form)
+
   return {
     organization_name: organizationName,
+    logo: form.tenantLogo instanceof File ? form.tenantLogo : null,
     email: form.email.trim(),
     contact_phone: form.phone.trim(),
     gst_number: String(form.gst || '')
       .trim()
       .toUpperCase(),
     branches,
-    co_owner_emails:
-      form.wantsCoOwners === 'yes'
-        ? form.coOwnerEmails
-            .map((email) => email.trim())
-            .filter(Boolean)
-            .slice(0, 3)
-        : [],
+    ops_admin_email: String(form.opsAdminEmail || '').trim(),
+    co_owner_emails: coOwnerEmails,
     slug,
-    custom_domain:
-      form.hasDomain === 'yes' ? form.customDomain.trim() : '',
+    custom_domain: form.hasDomain === 'yes' ? form.customDomain.trim() : '',
     wants_custom_website: form.customizeWebsite === 'yes',
+    requested_plan: form.requestedPlan ?? null,
   }
 }
 
@@ -96,14 +81,20 @@ export async function buildOnboardingFormData(form) {
   body.append('organization_name', payload.organization_name)
   body.append('email', payload.email)
   body.append('contact_phone', payload.contact_phone)
-  if (payload.gst_number) {
-    body.append('gst_number', payload.gst_number)
-  }
+  body.append('gst_number', payload.gst_number || '')
   body.append('branches', JSON.stringify(payload.branches))
-  body.append('co_owner_emails', JSON.stringify(payload.co_owner_emails))
+  body.append('ops_admin_email', payload.ops_admin_email || '')
+  body.append(
+    'co_owner_emails',
+    payload.co_owner_emails ? JSON.stringify(payload.co_owner_emails) : ''
+  )
   body.append('slug', payload.slug)
-  body.append('custom_domain', payload.custom_domain)
-  body.append('wants_custom_website', String(payload.wants_custom_website))
+  body.append('custom_domain', payload.custom_domain || '')
+  body.append('wants_custom_website', String(Boolean(payload.wants_custom_website)))
+  body.append(
+    'requested_plan',
+    payload.requested_plan == null ? '' : String(payload.requested_plan)
+  )
 
   if (form.tenantLogo instanceof File) {
     const logo = await compressImage(form.tenantLogo, {
