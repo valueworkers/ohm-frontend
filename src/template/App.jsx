@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Navigate, Routes, Route, useLocation } from 'react-router-dom'
 import { Suspense, lazy, useEffect, useMemo } from 'react'
 import NavBar from './components/NavBar'
 import LoginModal from './components/LoginModal'
@@ -23,6 +23,8 @@ const About = lazy(() => import('./pages/About'))
 const Media = lazy(() => import('./pages/Media'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Privacy = lazy(() => import('./pages/Privacy'))
+const AccountHub = lazy(() => import('./pages/AccountHub'))
+const AccessHub = lazy(() => import('./pages/AccessHub'))
 
 function buildDefaultSeo(brandName) {
   return {
@@ -250,7 +252,7 @@ function App() {
   return (
     <>
       <SeoManager />
-      <div className="min-h-screen bg-gray-50 text-gray-900">
+      <div className="min-h-screen bg-gray-50 text-gray-900 text-[15px] leading-normal">
         <NavBar />
         <LoginModal />
         <main>
@@ -277,6 +279,13 @@ function App() {
               <Route path="/persona-permissions" element={<PersonaPermissions />} />
               <Route path="/pay" element={<Payment />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/account" element={<AccountHub />} />
+              <Route path="/access" element={<AccessHub />} />
+              <Route path="/profile" element={<Navigate to="/account" replace />} />
+              <Route path="/my-tenants" element={<Navigate to="/account?tab=tenants" replace />} />
+              <Route path="/co-owners" element={<Navigate to="/access?tab=co-owners" replace />} />
+              <Route path="/roles" element={<Navigate to="/access" replace />} />
+              <Route path="/role-assignments" element={<Navigate to="/access?tab=assignments" replace />} />
               <Route path="/reset-password" element={<ResetPassowrd />} />
               <Route path="/booking" element={<BookingDashboard />} />
             </Routes>

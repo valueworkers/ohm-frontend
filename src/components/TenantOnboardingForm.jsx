@@ -33,6 +33,7 @@ const INITIAL_FORM = {
   email: '',
   phone: '',
   gst: '',
+  opsAdminEmail: '',
   wantsCoOwners: 'no',
   coOwnerEmails: [''],
   branches: [{ ...EMPTY_BRANCH }],
@@ -247,6 +248,16 @@ function TenantOnboardingForm() {
       return
     }
 
+    const opsAdminEmail = form.opsAdminEmail.trim()
+    if (!opsAdminEmail) {
+      setErrorMessage('Ops admin email is required.')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(opsAdminEmail)) {
+      setErrorMessage('Enter a valid ops admin email.')
+      return
+    }
+
     const gst = form.gst.trim().toUpperCase()
     if (gst && !GSTIN_PATTERN.test(gst)) {
       setErrorMessage('Enter a valid 15-character GSTIN.')
@@ -458,6 +469,22 @@ function TenantOnboardingForm() {
 
               <div className="form-row form-row-2">
                 <div className="form-field">
+                  <label htmlFor="opsAdminEmail">Ops admin email</label>
+                  <input
+                    id="opsAdminEmail"
+                    name="opsAdminEmail"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="ops@example.com"
+                    value={form.opsAdminEmail}
+                    onChange={(event) =>
+                      updateField('opsAdminEmail', event.target.value)
+                    }
+                  />
+                </div>
+
+                <div className="form-field">
                   <label htmlFor="gst">GST number</label>
                   <input
                     id="gst"
@@ -478,7 +505,9 @@ function TenantOnboardingForm() {
                     }}
                   />
                 </div>
+              </div>
 
+              <div className="form-row">
                 <div className="form-field">
                   <span className="field-label" id="logo-label">
                     Organization logo

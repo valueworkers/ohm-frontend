@@ -7,7 +7,6 @@ import BookCarePage from './pages/BookCarePage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import MyTenantsPage from './pages/MyTenantsPage'
-import OwnerProfilePage from './pages/OwnerProfilePage'
 import PricingPage from './pages/PricingPage'
 import TenantDetailPage from './pages/TenantDetailPage'
 import TemplateRoot from './template/TemplateRoot'
@@ -54,7 +53,7 @@ function PlatformApp() {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/my-tenants" element={<MyTenantsPage />} />
-            <Route path="/profile" element={<OwnerProfilePage />} />
+            <Route path="/profile" element={<Navigate to="/my-tenants" replace />} />
             <Route path="/tenants/:tenantId" element={<TenantDetailPage />} />
             <Route path="/t/:slug/:tenantId/*" element={<EnterTenantTemplate />} />
             <Route path="*" element={<Navigate to="/" replace />} />

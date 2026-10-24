@@ -111,18 +111,18 @@ export function navigateToTenantSite(tenant, { confirm = true } = {}) {
   const profile = rememberTenantForSite(tenant)
   if (!profile?.slug || profile.tenantId == null) return false
 
-  const destination = isLocalDevHost()
-    ? `/t/${encodeURIComponent(profile.slug)}/${encodeURIComponent(profile.tenantId)}/`
-    : getTenantPublicUrl(tenant)
+  const loginPath = isLocalDevHost()
+    ? `/t/${encodeURIComponent(profile.slug)}/${encodeURIComponent(profile.tenantId)}/login`
+    : `${getTenantPublicUrl(tenant)}login`
 
-  if (!destination) return false
+  if (!loginPath) return false
 
   if (confirm) {
     const label = domain || profile.slug
-    const ok = window.confirm(`Open your site at ${label}?`)
+    const ok = window.confirm(`Open sign-in for ${label}?`)
     if (!ok) return false
   }
 
-  window.location.assign(destination)
+  window.location.assign(loginPath)
   return true
 }

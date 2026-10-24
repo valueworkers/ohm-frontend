@@ -63,6 +63,28 @@ export async function resetPassword({ username, otp, newPassword }) {
   })
 }
 
+function buildDisplayName(user) {
+  if (!user || typeof user !== 'object') return ''
+  const full = String(user.full_name || '').trim()
+  if (full) return full
+  return [user.first_name, user.middle_name, user.last_name]
+    .map((part) => String(part || '').trim())
+    .filter(Boolean)
+    .join(' ')
+}
+
+function normalizeUser(user) {
+  if (!user || typeof user !== 'object') return null
+  const role =
+    user.primary_role ?? user.role ?? user.user_type ?? null
+  return {
+    ...user,
+    role,
+    primary_role: user.primary_role ?? role,
+    full_name: buildDisplayName(user),
+  }
+}
+
 export function saveAuthSession(payload) {
   const access =
     payload?.tokens?.access ||
@@ -78,10 +100,12 @@ export function saveAuthSession(payload) {
     null
 
   const tenant = extractTenantFromAuthPayload(payload)
+  const user = normalizeUser(payload?.user)
 
   const session = {
     message: payload?.message || '',
-    user: payload?.user ?? null,
+    schema_name: payload?.schema_name || null,
+    user,
     access,
     refresh,
     tenant,
@@ -129,15 +153,25 @@ export function isAuthenticated() {
   return Boolean(getAccessToken())
 }
 
-export function getUserRole(sessionOrUser = getAuthSession()) {
-  const user = sessionOrUser?.user ?? sessionOrUser
-  const role = user?.role
+/** Normalize API role labels: "Super Admin" → "SUPER_ADMIN". */
+export function normalizeRoleCode(role) {
   if (role == null || role === '') return null
   return String(role)
+    .trim()
+    .replace(/[\s-]+/g, '_')
+    .toUpperCase()
+}
+
+export function getUserRole(sessionOrUser = getAuthSession()) {
+  const user = sessionOrUser?.user ?? sessionOrUser
+  const role =
+    user?.primary_role ?? user?.role ?? user?.user_type ?? null
+  return normalizeRoleCode(role)
 }
 
 export function isSuperAdmin(sessionOrUser = getAuthSession()) {
-  return getUserRole(sessionOrUser) === 'SUPER_ADMIN'
+  const code = getUserRole(sessionOrUser)
+  return code === 'SUPER_ADMIN' || code === 'SUPERADMIN'
 }
 
 /** Where to send the user after a successful platform login. */

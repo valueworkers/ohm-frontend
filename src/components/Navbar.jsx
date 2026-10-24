@@ -68,6 +68,10 @@ function Navbar() {
 
   const displayName =
     session?.user?.full_name?.trim() ||
+    [session?.user?.first_name, session?.user?.last_name]
+      .filter(Boolean)
+      .join(' ')
+      .trim() ||
     session?.user?.email ||
     'Account'
   const showOwnerLinks = Boolean(session?.access) && !isSuperAdmin(session)
@@ -125,14 +129,6 @@ function Navbar() {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       My tenants
-                    </Link>
-                    <Link
-                      to="/profile"
-                      role="menuitem"
-                      className="navbar-menu-item"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Profile
                     </Link>
                     <div className="navbar-menu-divider" role="separator" />
                   </>

@@ -11,9 +11,16 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Override platform body (1.125rem) so rem/Tailwind scale stays at 16px. */
+html {
+  font-size: 16px;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  font-size: 16px;
+  line-height: 1.5;
   background-color: #f8fafc;
 }
 

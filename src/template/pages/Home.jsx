@@ -609,7 +609,7 @@ const Home = () => {
       <section ref={heroSectionRef} className="bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid gap-6 md:grid-cols-2 items-center">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-bold leading-tight text-slate-900">
+            <h1 className="text-3xl sm:text-4xl font-bold leading-tight text-slate-900">
               Compassionate care for your loved ones, wherever you need it
             </h1>
             <p className="text-lg text-slate-600 mt-3">
@@ -810,7 +810,7 @@ const Home = () => {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
           <div>
             <p className="text-teal-600 font-semibold uppercase tracking-[0.2em] text-xs">What we offer</p>
-            <h2 className="text-3xl font-bold text-slate-900 mt-1.5">Personalized care plans that evolve with you</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mt-1.5">Personalized care plans that evolve with you</h2>
             <p className="text-slate-600 mt-1.5 max-w-2xl">
               Start in under 48 hours. Mix skilled nursing, assisted living, and rehab visits without changing your care
               team.
@@ -901,7 +901,7 @@ const Home = () => {
       {/* FAQ — left topics, right questions */}
       <section ref={faqSectionRef} id="faq" className="bg-white py-10 border-t border-slate-100 defer-render-section scroll-mt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-center text-slate-900 mt-1.5">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-bold text-center text-slate-900 mt-1.5">Frequently Asked Questions</h2>
 
           <div className="mt-8 rounded-2xl border-2 border-slate-200 bg-white p-3 sm:p-4">
             <div className="flex flex-col md:flex-row gap-4 min-h-[420px]">
@@ -1043,7 +1043,7 @@ const Home = () => {
       {/* <section className="bg-white py-8 border-t border-slate-100 defer-render-section">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <p className="text-center text-teal-600 font-semibold uppercase tracking-[0.2em] text-xs">Watch</p>
-          <h2 className="text-3xl font-bold text-center text-slate-900 mt-1.5">Vaishnavi Medicare in Action</h2>
+          <h2 className="text-2xl font-bold text-center text-slate-900 mt-1.5">{brandName} in action</h2>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -1083,7 +1083,7 @@ const Home = () => {
       <section className="bg-slate-50 py-8 defer-render-section">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <p className="text-center text-teal-600 font-semibold uppercase tracking-[0.2em] text-xs">Families speak</p>
-          <h2 className="text-3xl font-bold text-center text-slate-900 mt-1.5">Why people trust {brandName}</h2>
+          <h2 className="text-2xl font-bold text-center text-slate-900 mt-1.5">Why people trust {brandName}</h2>
           <div className="grid gap-3 md:grid-cols-2 mt-6">
             {testimonials.map((item) => (
               <div key={item.name} className="p-5 rounded-2xl border border-white shadow-sm bg-white">
@@ -1103,7 +1103,7 @@ const Home = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="bg-slate-50 rounded-3xl text-slate-900 px-6 py-8 grid gap-4 md:grid-cols-[1.5fr,1fr] items-center border border-slate-100">
             <div>
-              <h2 className="text-3xl font-bold text-slate-900">Ready to start care?</h2>
+              <h2 className="text-2xl font-bold text-slate-900">Ready to start care?</h2>
               <p className="text-slate-600 mt-1.5">
                 Share a few details, get matched with the right caregiver, and begin services in 48 hours.
               </p>

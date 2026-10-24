@@ -1,4 +1,5 @@
 import { forceLogoutAndRedirect, readAuthSession } from './session'
+import { getTenantHeaders, resolveCurrentTenantSlug } from '../utils/tenantHeader'
 
 function getBaseUrl() {
   const raw = import.meta.env.VITE_BASEURL_CARE ?? ''
@@ -142,14 +143,29 @@ function shouldForceLogout({ path, status, message }) {
 }
 
 export async function apiRequest(path, options = {}) {
-  const { auth = false, headers: customHeaders, ...rest } = options
+  const { auth = false, headers: customHeaders, tenantSlug, ...rest } = options
   const cleanPath = path.replace(/^\//, '')
   const url = `${getBaseUrl()}${cleanPath}`
   const isFormData =
     typeof FormData !== 'undefined' && rest.body instanceof FormData
+  // X-Tenant only on tenant sites (slug.o-hm.com or /t/...), never on o-hm.com
+  const onTenantSite = Boolean(resolveCurrentTenantSlug())
+  const slug = onTenantSite
+    ? tenantSlug ||
+      customHeaders?.['X-Tenant'] ||
+      customHeaders?.['x-tenant'] ||
+      resolveCurrentTenantSlug()
+    : null
+
   const headers = {
     Accept: 'application/json',
+    ...getTenantHeaders(slug),
     ...customHeaders,
+  }
+
+  if (!onTenantSite) {
+    delete headers['X-Tenant']
+    delete headers['x-tenant']
   }
 
   // Let the browser set multipart boundary for FormData
@@ -161,7 +177,11 @@ export async function apiRequest(path, options = {}) {
   }
 
   if (auth) {
-    const access = readAuthSession()?.access
+    const access =
+      readAuthSession()?.access ||
+      (typeof localStorage !== 'undefined'
+        ? localStorage.getItem('access_token')
+        : null)
     if (access) headers.Authorization = `Bearer ${access}`
   }
 

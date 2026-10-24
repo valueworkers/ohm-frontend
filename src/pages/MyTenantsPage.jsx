@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import {
   getAuthSession,
   isAuthenticated,
@@ -183,7 +183,6 @@ function MyTenantsPage() {
             </p>
           </div>
           <div className="my-tenants-actions">
-            <Link to="/profile">Profile</Link>
             <button type="button" className="my-tenants-btn" onClick={loadTenants}>
               Refresh
             </button>
@@ -294,9 +293,10 @@ function MyTenantsPage() {
                           </li>
                         ))}
                       </ul>
-                      <Link to="/profile" className="my-tenants-owners-link">
-                        Manage owners on Profile
-                      </Link>
+                      <p className="my-tenants-owners-link">
+                        Manage profile &amp; co-owners on your tenant site
+                        {domain ? ` (${domain})` : ''}.
+                      </p>
                     </div>
                   ) : null}
 

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getTenantHeaders, resolveCurrentTenantSlug } from '../../utils/tenantHeader';
 
 // Create a custom event to trigger the login modal
 export const showLoginModal = () => {
@@ -34,6 +35,9 @@ const refreshAccessToken = async () => {
       `${import.meta.env.VITE_BASEURL_CARE}/accounts/token/refresh/`,
       {
         refresh: refreshToken
+      },
+      {
+        headers: getTenantHeaders(resolveCurrentTenantSlug()),
       }
     );
 
@@ -96,13 +100,24 @@ const refreshAccessToken = async () => {
   }
 };
 
-// Request interceptor to add access token to requests
+// Request interceptor to add access token + tenant header
 axios.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem('access_token');
     
     if (accessToken && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    const slug = resolveCurrentTenantSlug();
+    if (slug) {
+      if (!config.headers['X-Tenant'] && !config.headers['x-tenant']) {
+        Object.assign(config.headers, getTenantHeaders(slug));
+      }
+    } else {
+      // Platform host (o-hm.com) — never send tenant header
+      delete config.headers['X-Tenant'];
+      delete config.headers['x-tenant'];
     }
     
     return config;

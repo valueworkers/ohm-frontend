@@ -186,6 +186,13 @@ const NavBar = () => {
   }
 
   const userAvatar = authUser?.profile_pic || authUser?.profile_picture || authUser?.avatar || ''
+  const displayName =
+    authUser?.full_name?.trim() ||
+    [authUser?.first_name, authUser?.last_name].filter(Boolean).join(' ').trim() ||
+    authUser?.email ||
+    'Account'
+  const displayInitial =
+    displayName.charAt(0).toUpperCase() || 'U'
   const handleNotificationsClick = () => {
     setShowUserDropdown(false)
     setShowAuthDropdown(false)
@@ -220,7 +227,7 @@ const NavBar = () => {
           </Link>
           <Link
             to="/"
-            className="text-3xl mr-5 font-semibold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-slate-900 via-emerald-500 to-teal-600 font-['Cormorant_Garamond']"
+            className="text-xl mr-5 font-semibold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-slate-900 via-emerald-500 to-teal-600 font-['Cormorant_Garamond']"
           >
             {brandName}
           </Link>
@@ -304,20 +311,19 @@ const NavBar = () => {
                 {userAvatar && !avatarError ? (
                   <img
                     src={userAvatar}
-                    alt={`${authUser.first_name} ${authUser.last_name}`}
+                    alt={displayName}
                     className="h-10 w-10 rounded-full object-cover border-2 border-teal-200"
                     onError={() => setAvatarError(true)}
                   />
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-semibold">
-                    {authUser.first_name?.[0]?.toUpperCase() || "U"}
+                    {displayInitial}
                   </div>
                 )}
-                <div className="text-sm">
-                  <p className="font-semibold text-slate-900 leading-none">
-                    {authUser.first_name} {authUser.last_name}
+                <div className="text-sm min-w-0">
+                  <p className="font-semibold text-slate-900 leading-none truncate max-w-[10rem]">
+                    {displayName}
                   </p>
-                  {/* <p className="text-slate-500 text-xs capitalize">{authUser.user_type || 'Customer'}</p> */}
                 </div>
                 <button
                   onClick={() => setShowUserDropdown((prev) => !prev)}
@@ -358,12 +364,29 @@ const NavBar = () => {
                 {showUserDropdown && (
                   <div className="absolute top-full mt-3 right-4 w-56 rounded-2xl border border-slate-100 bg-white shadow-lg shadow-slate-200/70">
                     <div className="px-4 py-3 border-b border-slate-100">
-                      <p className="text-sm font-semibold text-slate-900">
-                        {authUser.first_name} {authUser.last_name}
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {displayName}
                       </p>
-                      {/* <p className="text-xs text-slate-500 capitalize">{authUser.user_type || 'Customer'}</p> */}
+                      {authUser.email ? (
+                        <p className="text-xs text-slate-500 truncate">{authUser.email}</p>
+                      ) : null}
                     </div>
-                    <div className="py-2 text-sm text-slate-600">
+                    <div className="py-1.5 text-sm text-slate-600">
+                      <Link
+                        to="/account"
+                        className="block px-4 py-2 hover:bg-slate-50"
+                        onClick={() => setShowUserDropdown(false)}
+                      >
+                        Profile &amp; tenants
+                      </Link>
+                      <Link
+                        to="/access"
+                        className="block px-4 py-2 hover:bg-slate-50"
+                        onClick={() => setShowUserDropdown(false)}
+                      >
+                        Roles &amp; assignments
+                      </Link>
+                      <div className="border-t border-slate-100 my-1" />
                       <Link
                         to="/dashboard"
                         className="block px-4 py-2 hover:bg-slate-50"
@@ -483,23 +506,36 @@ const NavBar = () => {
                   {userAvatar && !avatarError ? (
                     <img
                       src={userAvatar}
-                      alt={`${authUser.first_name} ${authUser.last_name}`}
+                      alt={displayName}
                       className="h-10 w-10 rounded-full object-cover border-2 border-teal-200"
                       onError={() => setAvatarError(true)}
                     />
                   ) : (
                     <div className="h-10 w-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-semibold">
-                      {authUser.first_name?.[0]?.toUpperCase() || "U"}
+                      {displayInitial}
                     </div>
                   )}
-                  <div className="text-sm">
-                    <p className="font-semibold text-slate-900 leading-none">
-                      {authUser.first_name} {authUser.last_name}
+                  <div className="text-sm min-w-0">
+                    <p className="font-semibold text-slate-900 leading-none truncate">
+                      {displayName}
                     </p>
-                    {/* <p className="text-slate-500 text-xs capitalize">{authUser.user_type || 'Customer'}</p> */}
                   </div>
                 </div>
                 <div className="flex flex-col text-sm text-slate-600">
+                  <Link
+                    to="/account"
+                    className="py-2 hover:text-teal-600"
+                    onClick={() => setOpen(false)}
+                  >
+                    Profile &amp; tenants
+                  </Link>
+                  <Link
+                    to="/access"
+                    className="py-2 hover:text-teal-600"
+                    onClick={() => setOpen(false)}
+                  >
+                    Roles &amp; assignments
+                  </Link>
                   <Link
                     to="/dashboard"
                     className="py-2 hover:text-teal-600"
