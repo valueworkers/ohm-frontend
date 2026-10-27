@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { isTenantAuthenticated } from '../api/tenantAuth'
 import {
@@ -9,13 +9,31 @@ import {
   updateRole,
 } from '../api/rolesApi'
 
-function normalizePermissionKey(item) {
-  if (typeof item === 'string') return item
-  return item?.code || item?.key || item?.name || item?.id || ''
+function permissionId(item) {
+  if (typeof item === 'number' && Number.isFinite(item)) return item
+  if (typeof item === 'string' && /^\d+$/.test(item.trim())) {
+    return Number(item.trim())
+  }
+  const id = item?.id ?? item?.permission_id
+  const num = Number(id)
+  return Number.isFinite(num) ? num : null
+}
+
+function rolePermissionList(role) {
+  if (Array.isArray(role?.permission_details)) return role.permission_details
+  if (Array.isArray(role?.permissions)) return role.permissions
+  return []
+}
+
+function rolePermissionIds(role) {
+  return rolePermissionList(role)
+    .map(permissionId)
+    .filter((id) => id != null)
 }
 
 function Roles({ embedded = false }) {
   const canAccess = isTenantAuthenticated()
+  const formPanelRef = useRef(null)
   const [roles, setRoles] = useState([])
   const [permissions, setPermissions] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -33,15 +51,20 @@ function Roles({ embedded = false }) {
   const permissionOptions = useMemo(
     () =>
       permissions
-        .map((item) => ({
-          key: normalizePermissionKey(item),
-          label:
-            item?.name ||
-            item?.label ||
-            normalizePermissionKey(item) ||
-            'Permission',
-        }))
-        .filter((item) => item.key),
+        .map((item) => {
+          const id = permissionId(item)
+          if (id == null) return null
+          return {
+            id,
+            label:
+              item?.name ||
+              item?.label ||
+              item?.code ||
+              item?.key ||
+              `Permission ${id}`,
+          }
+        })
+        .filter(Boolean),
     [permissions]
   )
 
@@ -88,23 +111,43 @@ function Roles({ embedded = false }) {
       code: role.code || '',
       name: role.name || '',
       rank: role.rank ?? 30,
-      permissions: Array.isArray(role.permissions)
-        ? role.permissions.map(normalizePermissionKey).filter(Boolean)
-        : [],
+      permissions: rolePermissionIds(role),
     })
     setStatusMessage('')
+    window.requestAnimationFrame(() => {
+      formPanelRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+      const nameInput = formPanelRef.current?.querySelector('#role-name')
+      if (nameInput instanceof HTMLElement) nameInput.focus({ preventScroll: true })
+    })
   }
 
-  function togglePermission(key) {
+  function togglePermission(id) {
     setForm((prev) => {
-      const has = prev.permissions.includes(key)
+      const has = prev.permissions.includes(id)
       return {
         ...prev,
         permissions: has
-          ? prev.permissions.filter((item) => item !== key)
-          : [...prev.permissions, key],
+          ? prev.permissions.filter((item) => item !== id)
+          : [...prev.permissions, id],
       }
     })
+  }
+
+  function selectAllPermissions() {
+    setForm((prev) => ({
+      ...prev,
+      permissions: permissionOptions.map((item) => item.id),
+    }))
+  }
+
+  function deselectAllPermissions() {
+    setForm((prev) => ({
+      ...prev,
+      permissions: [],
+    }))
   }
 
   async function handleSave(event) {
@@ -179,58 +222,85 @@ function Roles({ embedded = false }) {
 
       {roles.length > 0 ? (
         <ul className="mt-4 space-y-3">
-          {roles.map((role) => (
-            <li
-              key={role.id || role.code}
-              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    {role.name || role.code}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    Code: {role.code || '—'} · Rank: {role.rank ?? '—'}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {(Array.isArray(role.permissions) ? role.permissions : []).length}{' '}
-                    permission(s)
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                    onClick={() => startEdit(role)}
-                  >
-                    Edit
-                  </button>
-                  {role.id ? (
+          {roles.map((role) => {
+            const details = rolePermissionList(role)
+            return (
+              <li
+                key={role.id || role.code}
+                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-slate-900">
+                      {role.name || role.code}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      Code: {role.code || '—'} · Rank: {role.rank ?? '—'}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {details.length} permission(s)
+                    </p>
+                    {details.length > 0 ? (
+                      <ul className="mt-2 flex flex-wrap gap-1.5">
+                        {details.slice(0, 8).map((item) => (
+                          <li
+                            key={permissionId(item) ?? item.code}
+                            className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600"
+                          >
+                            {item.name || item.code || `Permission ${item.id}`}
+                          </li>
+                        ))}
+                        {details.length > 8 ? (
+                          <li className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">
+                            +{details.length - 8} more
+                          </li>
+                        ) : null}
+                      </ul>
+                    ) : null}
+                  </div>
+                  <div className="flex gap-2">
                     <button
                       type="button"
-                      disabled={isSaving}
-                      className="rounded-full border border-rose-200 px-3 py-1.5 text-sm font-semibold text-rose-700 hover:bg-rose-50"
-                      onClick={() => handleDelete(role.id)}
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      onClick={() => startEdit(role)}
                     >
-                      Delete
+                      Edit
                     </button>
-                  ) : null}
+                    {role.id ? (
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        className="rounded-full border border-rose-200 px-3 py-1.5 text-sm font-semibold text-rose-700 hover:bg-rose-50"
+                        onClick={() => handleDelete(role.id)}
+                      >
+                        Delete
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       ) : null}
 
       <form
+        ref={formPanelRef}
         onSubmit={handleSave}
-        className="mt-4 space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+        className="mt-4 scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
       >
         <h2 className="text-base font-semibold text-slate-900">
           {editingId ? 'Edit role' : 'Create role'}
         </h2>
 
-        {!editingId ? (
+        {editingId ? (
+          <div>
+            <p className="block text-sm font-semibold text-slate-800">Code</p>
+            <p className="mt-1 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
+              {form.code || '—'}
+            </p>
+          </div>
+        ) : (
           <div>
             <label htmlFor="role-code" className="block text-sm font-semibold text-slate-800">
               Code
@@ -246,7 +316,7 @@ function Roles({ embedded = false }) {
               required
             />
           </div>
-        ) : null}
+        )}
 
         <div>
           <label htmlFor="role-name" className="block text-sm font-semibold text-slate-800">
@@ -280,20 +350,40 @@ function Roles({ embedded = false }) {
         </div>
 
         <fieldset>
-          <legend className="text-sm font-semibold text-slate-800">Permissions</legend>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <legend className="text-sm font-semibold text-slate-800">Permissions</legend>
+            {permissionOptions.length > 0 ? (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  onClick={selectAllPermissions}
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  onClick={deselectAllPermissions}
+                >
+                  Deselect all
+                </button>
+              </div>
+            ) : null}
+          </div>
           {permissionOptions.length === 0 ? (
             <p className="mt-2 text-sm text-slate-500">No permissions returned by the API.</p>
           ) : (
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {permissionOptions.map((item) => (
                 <label
-                  key={item.key}
+                  key={item.id}
                   className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
                 >
                   <input
                     type="checkbox"
-                    checked={form.permissions.includes(item.key)}
-                    onChange={() => togglePermission(item.key)}
+                    checked={form.permissions.includes(item.id)}
+                    onChange={() => togglePermission(item.id)}
                   />
                   <span>{item.label}</span>
                 </label>

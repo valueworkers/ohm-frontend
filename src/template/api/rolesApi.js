@@ -19,6 +19,21 @@ export async function getRole(roleId) {
   return apiRequest(`api/roles/${roleId}/`, { auth: true })
 }
 
+function toPermissionIds(permissions) {
+  if (!Array.isArray(permissions)) return []
+  return permissions
+    .map((item) => {
+      if (typeof item === 'number' && Number.isFinite(item)) return item
+      if (typeof item === 'string' && /^\d+$/.test(item.trim())) {
+        return Number(item.trim())
+      }
+      const id = item?.id ?? item?.permission_id
+      const num = Number(id)
+      return Number.isFinite(num) ? num : null
+    })
+    .filter((id) => id != null)
+}
+
 export async function createRole(payload) {
   return apiRequest('api/roles/', {
     auth: true,
@@ -27,7 +42,7 @@ export async function createRole(payload) {
       code: String(payload.code || '').trim(),
       name: String(payload.name || '').trim(),
       rank: Number(payload.rank),
-      permissions: Array.isArray(payload.permissions) ? payload.permissions : [],
+      permissions: toPermissionIds(payload.permissions),
     }),
   })
 }
@@ -39,7 +54,7 @@ export async function updateRole(roleId, payload) {
     body: JSON.stringify({
       name: String(payload.name || '').trim(),
       rank: Number(payload.rank),
-      permissions: Array.isArray(payload.permissions) ? payload.permissions : [],
+      permissions: toPermissionIds(payload.permissions),
     }),
   })
 }
